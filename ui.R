@@ -6,12 +6,15 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                  tabPanel('Main',
                           wellPanel(
                             fluidRow(
-                              column(6,
+                              column(4,
                                      uiOutput('chooseScaleUI')
                                      ),
-                              column(6,
+                              column(4,
                                      uiOutput('chooseMetricUI')
-                                     )
+                                     ),
+                              column(4,
+                                     uiOutput('chooseDiffUI')
+                              )
                             ),
                             uiOutput('chooseCountryUI'),
                             fluidRow(
@@ -25,11 +28,11 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                           ),
                           
     
-                          )#,
-                 # tabPanel('Background',
-                 #          includeMarkdown('vignettes/tssPlanner_background.md')),
-                 # tabPanel('Coming next',
-                 #          includeMarkdown('vignettes/tssPlanner_notes.md')),
-                 # tabPanel('About',
-                 #          includeMarkdown('vignettes/tssPlanner_about.md'))
+                          ),
+                 tabPanel('Background',
+                         includeMarkdown('vignettes/background.md')),
+                 tabPanel('Coming next',
+                         includeMarkdown('vignettes/coming.md')),
+                 tabPanel('About',
+                         includeMarkdown('vignettes/about.md'))
 )

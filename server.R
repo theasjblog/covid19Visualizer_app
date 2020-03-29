@@ -19,6 +19,13 @@ server <- function(input, output, session) {
                 selected = 'linear')
   })
   
+  output$chooseDiffUI <- renderUI({
+    req(rV$allData)
+    selectInput('chooseDiff', 'Plot type',
+                choices = c('raw', 'rate'),
+                selected = 'raw')
+  })
+  
   output$chooseCountryUI <- renderUI({
     req(rV$allData)
     selectInput('chooseCountry', 'Country',
@@ -34,20 +41,28 @@ server <- function(input, output, session) {
                 selected = 'cases')
   })
   
-  observeEvent(list(input$chooseCountry, input$chooseScale, input$chooseMetric),{
+  observeEvent(list(input$chooseCountry, input$chooseScale, input$chooseMetric,
+                    input$chooseDiff),{
     req(rV$allData)
     req(length(input$chooseCountry)>0)
     req(input$chooseMetric %in% rV$allData$type)
     req(all(input$chooseCountry %in% rV$allData$country))
+    if (input$chooseDiff == 'raw'){
+      plotDiff <- FALSE
+    } else {
+      plotDiff <- TRUE
+    }
     
     rV$doPlotGgplot <- doPlot(df = rV$allData,
                            typePlot = input$chooseMetric,
                            countryPlot = input$chooseCountry,
-                           scale = input$chooseScale)
+                           scale = input$chooseScale,
+                           plotDiff = plotDiff)
     
     rV$allMetricsGgplot <- plotAllMetrics(allDf = rV$allData,
                                           countryPlot = input$chooseCountry,
-                                          scale = input$chooseScale)
+                                          scale = input$chooseScale,
+                                          plotDiff = plotDiff)
   })
   
   output$doPlotUI <- renderPlot({
