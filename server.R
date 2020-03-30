@@ -1,10 +1,20 @@
-source('./functions/auxFunctions.R')
+##
+# publishing from package fails
+# workaround is to download the repo here and source the R folder
+download.file(url = "https://github.com/theasjblog/covid19_package/archive/master.zip"
+              , destfile = "covid19Package.zip")
+unzip(zipfile = "covid19Package.zip")
+
+listFiles <- list.files(paste0('./covid19_package-master/R'))
+for (i in listFiles){
+  source(paste0('./covid19_package-master/R/', i))
+}
+
 server <- function(input, output, session) {
   # REACTIVE VALUES
   rV <- reactiveValues(allData = refreshData(),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL)
-  
   
   output$allDataTable <- renderTable({
     req(rV$allData)
