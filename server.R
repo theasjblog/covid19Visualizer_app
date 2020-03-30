@@ -1,5 +1,4 @@
-library('covid19Visualizer')
-
+source('./functions/auxFunctions.R')
 server <- function(input, output, session) {
   # REACTIVE VALUES
   rV <- reactiveValues(allData = refreshData(),

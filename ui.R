@@ -1,5 +1,10 @@
 # Define UI for app that draws a histogram ----
 library('shinythemes')
+library('dplyr')
+library('tidyr')
+library('ggplot2')
+library('here')
+library('markdown')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
