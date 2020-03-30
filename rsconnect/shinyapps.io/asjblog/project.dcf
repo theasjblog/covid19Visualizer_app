@@ -1,0 +1,13 @@
+name: project
+title: project
+username:
+account: asjblog
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2016327
+bundleId: 2940323
+url: https://asjblog.shinyapps.io/project/
+when: 1585505017.46723
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|JHUData-master.zip|COVID-19-master

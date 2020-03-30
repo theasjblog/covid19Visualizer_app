@@ -1,0 +1,13 @@
+name: COVID-19
+title: COVID-19
+username:
+account: asjblog
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2016321
+bundleId: 2940440
+url: https://asjblog.shinyapps.io/COVID-19/
+when: 1585507067.05927
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|JHUData-master.zip|COVID-19-master
