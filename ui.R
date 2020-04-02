@@ -24,7 +24,15 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                             uiOutput('chooseCountryUI'),
                             fluidRow(
                               column(6,
-                                     plotOutput('doPlotUI')
+                                     plotOutput('doPlotUI'),
+                                     fluidRow(
+                                      column(6,
+                                             uiOutput('chooseAlignUI')
+                                             ), 
+                                      column(6,
+                                             uiOutput('choosePlotLimUI')
+                                             )
+                                     )
                               ),
                               column(6,
                                      plotOutput('allPlotsUI')

@@ -43,6 +43,18 @@ server <- function(input, output, session) {
                 multiple = TRUE)
   })
   
+  output$chooseAlignUI <- renderUI({
+    req(rV$allData)
+    checkboxInput('chooseAlign', 'Align dates', FALSE)
+  })
+  
+  output$choosePlotLimUI <- renderUI({
+    req(rV$allData)
+    sliderInput('choosePlotLim', label = 'Dates limits', min = 0, 
+                max = 100, value = c(0, 100), step = 1)
+                
+  })
+  
   output$chooseMetricUI <- renderUI({
     req(rV$allData)
     selectInput('chooseMetric', 'Metric',
@@ -51,7 +63,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(list(input$chooseCountry, input$chooseScale, input$chooseMetric,
-                    input$chooseDiff),{
+                    input$chooseDiff, input$chooseAlign, input$choosePlotLim),{
     req(rV$allData)
     req(length(input$chooseCountry)>0)
     req(input$chooseMetric %in% rV$allData$type)
@@ -63,10 +75,12 @@ server <- function(input, output, session) {
     }
     
     rV$doPlotGgplot <- doPlot(df = rV$allData,
-                           typePlot = input$chooseMetric,
-                           countryPlot = input$chooseCountry,
-                           scale = input$chooseScale,
-                           plotDiff = plotDiff)
+                              typePlot = input$chooseMetric,
+                              countryPlot = input$chooseCountry,
+                              scale = input$chooseScale,
+                              plotDiff = plotDiff,
+                              align = input$chooseAlign,
+                              plotLim = input$choosePlotLim)
     
     rV$allMetricsGgplot <- plotAllMetrics(allDf = rV$allData,
                                           countryPlot = input$chooseCountry,
