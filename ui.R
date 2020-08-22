@@ -5,6 +5,7 @@ library('tidyr')
 library('ggplot2')
 library('here')
 library('markdown')
+library('zoo')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
