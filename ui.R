@@ -6,6 +6,10 @@ library('ggplot2')
 library('here')
 library('markdown')
 library('zoo')
+library('rnaturalearth')
+library('rnaturalearthdata')
+library('countrycode')
+library('rgeos')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
