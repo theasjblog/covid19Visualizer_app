@@ -113,8 +113,8 @@ server <- function(input, output, session) {
     if(!is.null(input$ifAllCountriesMap)){
       if(!input$ifAllCountriesMap){
         selectInput('chooseCountryMap', 'Country',
-                    choices = unique(rV$allData$country),
-                    selected = unique(rV$allData$country)[1],
+                    choices = unique(rV$allData$Country.Region),
+                    selected = unique(rV$allData$Country.Region)[1],
                     multiple = TRUE)
       }
     }
@@ -155,8 +155,8 @@ server <- function(input, output, session) {
     if(!is.null(input$ifRemoveCountries)){
       if(input$ifRemoveCountries){
         selectInput('removeCountryMap', 'Country to remove',
-                    choices = unique(rV$allData$country),
-                    selected = unique(rV$allData$country)[1],
+                    choices = unique(rV$allData$Country.Region),
+                    selected = unique(rV$allData$Country.Region)[1],
                     multiple = TRUE)
       }
     }
