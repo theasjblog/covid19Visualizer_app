@@ -42,6 +42,29 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                           
     
                           ),
+                 tabPanel(
+                   'Map',
+                   wellPanel(
+                     fluidRow(
+                       column(2,
+                              uiOutput('logicalCountryMapUI'),
+                              uiOutput('logicalRemoveCountryMapUI')
+                       ),
+                       column(6,
+                              uiOutput('dayMapUI')
+                       ),
+                       column(2,
+                              uiOutput('normalizeMapUI')
+                              ),
+                       column(2,
+                              uiOutput('trendMapUI')
+                       )
+                     ),
+                     uiOutput('countryMapUI'),
+                     uiOutput('removeCountryMapUI'),
+                     plotOutput('mapUI')
+                   )
+                 ),
                  tabPanel('Background',
                          includeMarkdown('vignettes/background.md')),
                  tabPanel('Coming next',
