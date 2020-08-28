@@ -67,7 +67,9 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                      ),
                      uiOutput('countryMapUI'),
                      uiOutput('removeCountryMapUI'),
-                     plotOutput('mapUI')
+                     plotOutput('mapUI'),
+                     uiOutput('mapQChoiceUI'),
+                     plotOutput('mapQUI')
                    )
                  ),
                  tabPanel('Background',

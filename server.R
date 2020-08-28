@@ -210,4 +210,14 @@ server <- function(input, output, session) {
     
   })
   
+  output$mapQChoiceUI <- renderUI({
+    req(rV$allData)
+    checkboxInput('mapQChoice', 'Categorical',value = TRUE)
+  })
+  
+  
+  output$mapQUI <- renderPlot({
+    doQMap(rV$mapArgs$filterByCountry, input$mapQChoice)
+  })
+  
 }
