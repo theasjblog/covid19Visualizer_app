@@ -13,7 +13,7 @@ for (i in listFiles){
 server <- function(input, output, session) {
   # REACTIVE VALUES
   rV <- reactiveValues(allData = withProgress(message = 'Retriving data from JHU',
-                                              {refreshData()}),
+                                              {getAllData()}),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
                        mapArgs = NULL)
@@ -41,8 +41,8 @@ server <- function(input, output, session) {
   output$chooseCountryUI <- renderUI({
     req(rV$allData)
     selectInput('chooseCountry', 'Country',
-                choices = unique(rV$allData$country),
-                selected = unique(rV$allData$country)[1],
+                choices = unique(rV$allData@JHUData_raw$country),
+                selected = unique(rV$allData@JHUData_raw$country)[1],
                 multiple = TRUE)
   })
   
@@ -53,7 +53,7 @@ server <- function(input, output, session) {
   
   output$choosePlotLimUI <- renderUI({
     req(rV$allData)
-    maxVal <- ncol(rV$allData)-6
+    maxVal <- ncol(rV$allData@JHUData_raw)-6
     sliderInput('choosePlotLim', label = 'Dates limits', min = 0, 
                 max = maxVal, value = c(1, maxVal), step = 1)
                 
@@ -70,26 +70,25 @@ server <- function(input, output, session) {
                     input$chooseDiff, input$chooseAlign, input$choosePlotLim),{
     req(rV$allData)
     req(length(input$chooseCountry)>0)
-    req(input$chooseMetric %in% rV$allData$type)
-    req(all(input$chooseCountry %in% rV$allData$country))
+    req(input$chooseMetric %in% rV$allData@JHUData_raw$type)
+    req(all(input$chooseCountry %in% rV$allData@JHUData_raw$country))
     if (input$chooseDiff == 'raw'){
-      plotDiff <- FALSE
+      plotData <- slot(rV$allData, 'JHUData_raw')
     } else {
-      plotDiff <- TRUE
+      plotData <- slot(rV$allData, 'JHUData_diffSmooth')
     }
     
-    rV$doPlotGgplot <- doPlot(df = rV$allData,
+    rV$doPlotGgplot <- doPlot(df = plotData,
                               typePlot = input$chooseMetric,
                               countryPlot = input$chooseCountry,
                               scale = input$chooseScale,
-                              plotDiff = plotDiff,
                               align = input$chooseAlign,
                               plotLim = input$choosePlotLim)
     
-    rV$allMetricsGgplot <- plotAllMetrics(allDf = rV$allData,
+    
+    rV$allMetricsGgplot <- plotAllMetrics(allDf = plotData,
                                           countryPlot = input$chooseCountry,
-                                          scale = input$chooseScale,
-                                          plotDiff = plotDiff)
+                                          scale = input$chooseScale)
   })
   
   output$doPlotUI <- renderPlot({
@@ -113,8 +112,8 @@ server <- function(input, output, session) {
     if(!is.null(input$ifAllCountriesMap)){
       if(!input$ifAllCountriesMap){
         selectInput('chooseCountryMap', 'Country',
-                    choices = unique(rV$allData$Country.Region),
-                    selected = unique(rV$allData$Country.Region)[1],
+                    choices = unique(rV$allData@JHUData_raw$Country.Region),
+                    selected = unique(rV$allData@JHUData_raw$Country.Region)[1],
                     multiple = TRUE)
       }
     }
@@ -124,7 +123,7 @@ server <- function(input, output, session) {
     req(rV$allData)
     if(!is.null(input$trendMap)){
       if(!input$trendMap){
-        maxVal <- ncol(rV$allData)-6
+        maxVal <- ncol(rV$allData@JHUData_raw)-6
         sliderInput('chooseDayMap', label = 'Dates limits', min = 1, 
                     max = maxVal, value = maxVal, step = 1)
       }
@@ -155,8 +154,8 @@ server <- function(input, output, session) {
     if(!is.null(input$ifRemoveCountries)){
       if(input$ifRemoveCountries){
         selectInput('removeCountryMap', 'Country to remove',
-                    choices = unique(rV$allData$Country.Region),
-                    selected = unique(rV$allData$Country.Region)[1],
+                    choices = unique(rV$allData@JHUData_raw$Country.Region),
+                    selected = unique(rV$allData@JHUData_raw$Country.Region)[1],
                     multiple = TRUE)
       }
     }
@@ -200,7 +199,9 @@ server <- function(input, output, session) {
     req(rV$allData)
     req(rV$mapArgs)
     
-    tryCatch(doMap(rawData = rV$allData,
+    
+
+    tryCatch(doMap(plotData = rV$allData,
                    normalizeByPopulation = rV$mapArgs$normalizeByPopulation,
                    filterByCountry = rV$mapArgs$filterByCountry,
                    removeCountries = rV$mapArgs$removeCountries,
@@ -217,7 +218,13 @@ server <- function(input, output, session) {
   
   
   output$mapQUI <- renderPlot({
-    doQMap(rV$mapArgs$filterByCountry, input$mapQChoice)
+    req(rV$allData)
+    if(is.null(input$mapQChoice)){
+      doCat <- TRUE
+    } else {
+      doCat <- input$mapQChoice
+    }
+    doQMap(rV$allData, rV$mapArgs$filterByCountry, doCat)
   })
   
 }
