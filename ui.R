@@ -10,20 +10,28 @@ library('rnaturalearth')
 library('rnaturalearthdata')
 library('countrycode')
 library('rgeos')
+library('stringr')
+library('reshape2')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
                  tabPanel('Main',
                           wellPanel(
                             fluidRow(
-                              column(4,
+                              column(3,
                                      uiOutput('chooseScaleUI')
                                      ),
-                              column(4,
+                              column(3,
                                      uiOutput('chooseMetricUI')
                                      ),
-                              column(4,
+                              column(2,
                                      uiOutput('chooseDiffUI')
+                                    ),
+                              column(2,
+                                     uiOutput('chooseSmoothUI')
+                              ),
+                              column(2,
+                                     uiOutput('chooseNormaliseUI')
                               )
                             ),
                             uiOutput('chooseCountryUI'),
@@ -31,10 +39,7 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                               column(6,
                                      plotOutput('doPlotUI'),
                                      fluidRow(
-                                      column(6,
-                                             uiOutput('chooseAlignUI')
-                                             ), 
-                                      column(6,
+                                      column(12,
                                              uiOutput('choosePlotLimUI')
                                              )
                                      )
@@ -51,25 +56,18 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                    'Map',
                    wellPanel(
                      fluidRow(
-                       column(2,
-                              uiOutput('logicalCountryMapUI'),
-                              uiOutput('logicalRemoveCountryMapUI')
-                       ),
-                       column(6,
+                       column(4,
                               uiOutput('dayMapUI')
                        ),
-                       column(2,
-                              uiOutput('normalizeMapUI')
-                              ),
-                       column(2,
-                              uiOutput('trendMapUI')
-                       )
+                       column(4,
+                              uiOutput('plotTypeUI')
+                       ),
+                       column(4,
+                              uiOutput('plotMetricUI')
+                              )
                      ),
                      uiOutput('countryMapUI'),
-                     uiOutput('removeCountryMapUI'),
-                     plotOutput('mapUI'),
-                     uiOutput('mapQChoiceUI'),
-                     plotOutput('mapQUI')
+                     plotOutput('mapUI')
                    )
                  ),
                  tabPanel('Background',

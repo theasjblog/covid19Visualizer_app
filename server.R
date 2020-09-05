@@ -1,22 +1,32 @@
-##
-# publishing from package fails
-# workaround is to download the repo here and source the R folder
-download.file(url = "https://github.com/theasjblog/covid19_package/archive/master.zip"
-              , destfile = "covid19Package.zip")
-unzip(zipfile = "covid19Package.zip")
-
-listFiles <- list.files(paste0('./covid19_package-master/R'))
-for (i in listFiles){
-  source(paste0('./covid19_package-master/R/', i))
-}
-
 server <- function(input, output, session) {
+  
+  # publishing to shiny server from package fails
+  # workaround is to download the repo here and source the R folder
+  loadCode <- function(branchName){
+    
+    download.file(url = paste0("https://github.com/theasjblog/covid19_package/archive/",branchName,".zip")
+                  , destfile = "covid19Package.zip")
+    unzip(zipfile = "covid19Package.zip")
+    
+    listFiles <- list.files(paste0('./covid19_package-',branchName,'/R'))
+    for (i in listFiles){
+      source(paste0('./covid19_package-', branchName, '/R/', i))
+    }
+  }
+  
+  
   # REACTIVE VALUES
-  rV <- reactiveValues(allData = withProgress(message = 'Retriving data from JHU',
-                                              {getAllData()}),
+  rV <- reactiveValues(loadCode = withProgress(message = 'Loading app',
+                                               {loadCode('master')}),
+                       allData = withProgress(message = 'Retriving data from JHU',
+                                              {getJHU()}),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
-                       mapArgs = NULL)
+                       mapArgs = list(plotMetric = 'cases',
+                                      filterByCountry = 'Italy',
+                                      chosenDay = NULL,
+                                      plotType = 'doMapGBQuarantine_binary'))
+  
   
   output$allDataTable <- renderTable({
     req(rV$allData)
@@ -33,30 +43,38 @@ server <- function(input, output, session) {
   
   output$chooseDiffUI <- renderUI({
     req(rV$allData)
-    selectInput('chooseDiff', 'Plot type',
-                choices = c('raw', 'rate'),
-                selected = 'raw')
+    checkboxInput('chooseDiff', 'Plot rate',
+                  value = TRUE)
+  })
+  
+  output$chooseNormaliseUI <- renderUI({
+    req(rV$allData)
+    checkboxInput('chooseNormalise', 'Normalise by population',
+                  value = FALSE)
+  })
+  
+  output$chooseSmoothUI <- renderUI({
+    req(rV$allData)
+    checkboxInput('chooseSmooth', 'Smooth plot',
+                  value = TRUE)
   })
   
   output$chooseCountryUI <- renderUI({
     req(rV$allData)
+    optionsAre <- rV$allData@keys
     selectInput('chooseCountry', 'Country',
-                choices = unique(rV$allData@JHUData_raw$country),
-                selected = unique(rV$allData@JHUData_raw$country)[1],
+                choices = unique(optionsAre),
+                selected = 'Italy',
                 multiple = TRUE)
   })
   
-  output$chooseAlignUI <- renderUI({
-    req(rV$allData)
-    checkboxInput('chooseAlign', 'Align dates', FALSE)
-  })
   
   output$choosePlotLimUI <- renderUI({
     req(rV$allData)
-    maxVal <- ncol(rV$allData@JHUData_raw)-6
-    sliderInput('choosePlotLim', label = 'Dates limits', min = 0, 
+    maxVal <- ncol(rV$allData@JHUData_raw)-1
+    sliderInput('choosePlotLim', label = 'Dates limits', min = 1, 
                 max = maxVal, value = c(1, maxVal), step = 1)
-                
+    
   })
   
   output$chooseMetricUI <- renderUI({
@@ -67,29 +85,30 @@ server <- function(input, output, session) {
   })
   
   observeEvent(list(input$chooseCountry, input$chooseScale, input$chooseMetric,
-                    input$chooseDiff, input$chooseAlign, input$choosePlotLim),{
-    req(rV$allData)
-    req(length(input$chooseCountry)>0)
-    req(input$chooseMetric %in% rV$allData@JHUData_raw$type)
-    req(all(input$chooseCountry %in% rV$allData@JHUData_raw$country))
-    if (input$chooseDiff == 'raw'){
-      plotData <- slot(rV$allData, 'JHUData_raw')
-    } else {
-      plotData <- slot(rV$allData, 'JHUData_diffSmooth')
-    }
-    
-    rV$doPlotGgplot <- doPlot(df = plotData,
-                              typePlot = input$chooseMetric,
-                              countryPlot = input$chooseCountry,
-                              scale = input$chooseScale,
-                              align = input$chooseAlign,
-                              plotLim = input$choosePlotLim)
-    
-    
-    rV$allMetricsGgplot <- plotAllMetrics(allDf = plotData,
-                                          countryPlot = input$chooseCountry,
-                                          scale = input$chooseScale)
-  })
+                    input$chooseDiff, input$choosePlotLim, input$chooseSmooth,
+                    input$chooseNormalise),{
+                      req(rV$allData)
+                      req(length(input$chooseCountry)>0)
+                      req(input$chooseMetric %in% rV$allData@populationDf$type)
+                      
+                      rV$doPlotGgplot <- doPlot(dataObj = rV$allData,
+                                                typePlot = input$chooseMetric,
+                                                geographyFilter = input$chooseCountry,
+                                                scale = input$chooseScale,
+                                                plotLim = input$choosePlotLim,
+                                                plotRate = input$chooseDiff,
+                                                smooth = input$chooseSmooth,
+                                                normalizeByPop = input$chooseNormalise)
+                      
+                      
+                      rV$allMetricsGgplot <- plotAllMetrics(dataObj = rV$allData,
+                                                            geographyFilter = input$chooseCountry,
+                                                            plotRate = input$chooseDiff,
+                                                            smooth = input$chooseSmooth,
+                                                            scale = input$chooseScale,
+                                                            normalizeByPop = input$chooseNormalise,
+                                                            plotLim = input$choosePlotLim)
+                    })
   
   output$doPlotUI <- renderPlot({
     req(rV$doPlotGgplot)
@@ -102,129 +121,86 @@ server <- function(input, output, session) {
   })
   
   
-  output$logicalCountryMapUI <- renderUI({
-    req(rV$allData)
-    checkboxInput('ifAllCountriesMap', 'Show all countries?', value = TRUE)
-  })
   
   output$countryMapUI <- renderUI({
     req(rV$allData)
-    if(!is.null(input$ifAllCountriesMap)){
-      if(!input$ifAllCountriesMap){
+    
+        avaCount <- unique(rV$allData@populationDf$Country[!is.na(rV$allData@populationDf$Population)])
         selectInput('chooseCountryMap', 'Country',
-                    choices = unique(rV$allData@JHUData_raw$Country.Region),
-                    selected = unique(rV$allData@JHUData_raw$Country.Region)[1],
+                    choices = avaCount,
+                    selected = 'Italy',
                     multiple = TRUE)
-      }
-    }
   })
   
   output$dayMapUI <- renderUI({
     req(rV$allData)
-    if(!is.null(input$trendMap)){
-      if(!input$trendMap){
-        maxVal <- ncol(rV$allData@JHUData_raw)-6
-        sliderInput('chooseDayMap', label = 'Dates limits', min = 1, 
-                    max = maxVal, value = maxVal, step = 1)
-      }
-    }
+    maxVal <- ncol(rV$allData@JHUData_raw)-1
+    sliderInput('chooseDayMap', label = 'Dates limits', min = 1, 
+                max = maxVal, value = maxVal, step = 1)
   })
   
-  output$trendMapUI <- renderUI({
+  output$plotMetricUI <- renderUI({
     req(rV$allData)
-    checkboxInput('trendMap', 'Show trend?', value = FALSE)
+    selectInput('plotMetric', 'Metric to plot',
+                choices = c('cases', 'deaths', 'recovered'), selected = 'cases',
+                multiple = FALSE)
   })
   
-  output$normalizeMapUI <- renderUI({
+  output$plotMetricUI <- renderUI({
     req(rV$allData)
-    if(!is.null(input$trendMap)){
-      if(!input$trendMap){
-        checkboxInput('normalizeMap', 'Normalize by population?', value = FALSE)
-      }
-    }
+    req(input$plotType)
+    req(!input$plotType %in% c('doMapGBQuarantine_binary', 'doMapGBQuarantine'))
+    selectInput('plotMetric', 'Metric to plot',
+                choices = c('cases', 'deaths', 'recovered'), selected = 'cases',
+                multiple = FALSE)
   })
   
-  output$logicalRemoveCountryMapUI <- renderUI({
+  output$plotTypeUI <- renderUI({
     req(rV$allData)
-    checkboxInput('ifRemoveCountries', 'Remove some countries?', value = FALSE)
+    selectInput('plotType', 'Type of plot',
+                choices = c('doMapTrend_normalise', 'doMapTrend',
+                            'doMapDataRate_raw', 'doMapDataRate_normalised',
+                            'doMapGBQuarantine_binary', 'doMapGBQuarantine',
+                            'doMapData_raw', 'doMapData_normalised'),
+                selected = 'doMapGBQuarantine_binary',
+                multiple = FALSE)
   })
   
-  output$removeCountryMapUI <- renderUI({
-    req(rV$allData)
-    if(!is.null(input$ifRemoveCountries)){
-      if(input$ifRemoveCountries){
-        selectInput('removeCountryMap', 'Country to remove',
-                    choices = unique(rV$allData@JHUData_raw$Country.Region),
-                    selected = unique(rV$allData@JHUData_raw$Country.Region)[1],
-                    multiple = TRUE)
-      }
-    }
-  })
+  observeEvent(list(input$chooseDayMap,
+                    input$plotMetric, input$chooseCountryMap,
+                    input$plotType),{
+              
+                      if(!is.null(input$plotType) & !is.null(input$chooseDayMap)){
+                        if(input$plotType %in% c('doMapGBQuarantine_binary',
+                                                 'doMapGBQuarantine')){
+                          plotMetric <- 'cases'
+                        } else {
+                          plotMetric <- input$plotMetric
+                        }
+                        rV$mapArgs <- list(plotMetric = plotMetric,
+                                           filterByCountry = input$chooseCountryMap,
+                                           chosenDay = input$chooseDayMap,
+                                           plotType = input$plotType)
+                        
+                      }
+                    })
   
-  observeEvent(list(input$trendMap, input$ifAllCountriesMap, input$chooseDayMap,
-                    input$normalizeMap, input$chooseCountryMap, input$ifRemoveCountries,
-                    input$removeCountryMap),{
-      
-    
-      if(!is.null(input$trendMap) & !is.null(input$ifAllCountriesMap) & !is.null(input$ifRemoveCountries)){
-        if(input$trendMap){
-          chosenDay <- NULL
-          normalizeByPopulation <- FALSE
-        } else {
-          chosenDay <- input$chooseDayMap
-          normalizeByPopulation <- input$normalizeMap
-        }
-        if(input$ifAllCountriesMap){
-          countriesToPlot <- NULL
-        } else {
-          countriesToPlot <- input$chooseCountryMap
-        }
-        if(!input$ifRemoveCountries){
-          removeCountries <- NULL
-        } else {
-          removeCountries <- input$removeCountryMap
-        }
-        
-        rV$mapArgs <- list(normalizeByPopulation = normalizeByPopulation,
-                           filterByCountry = countriesToPlot,
-                           removeCountries = removeCountries,
-                           chosenDay = chosenDay,
-                           showTrend = input$trendMap)
-      }
-  })
-    
-    
+  
   
   output$mapUI <- renderPlot({
     req(rV$allData)
     req(rV$mapArgs)
     
     
-
-    tryCatch(doMap(plotData = rV$allData,
-                   normalizeByPopulation = rV$mapArgs$normalizeByPopulation,
-                   filterByCountry = rV$mapArgs$filterByCountry,
-                   removeCountries = rV$mapArgs$removeCountries,
-                   chosenDay =  rV$mapArgs$chosenDay,
-                   showTrend = rV$mapArgs$showTrend),
-             error = function(err){})
+    tryCatch(
+      withProgress(message = 'Loading map',
+                   {plotMap(plotData = rV$allData,
+                            plotMetric = rV$mapArgs$plotMetric,
+                            filterByCountry = rV$mapArgs$filterByCountry,
+                            chosenDay = rV$mapArgs$chosenDay,
+                            plotType = rV$mapArgs$plotType)}),
+      error = function(err){})
     
-  })
-  
-  output$mapQChoiceUI <- renderUI({
-    req(rV$allData)
-    checkboxInput('mapQChoice', 'Categorical',value = TRUE)
-  })
-  
-  
-  output$mapQUI <- renderPlot({
-    req(rV$allData)
-    if(is.null(input$mapQChoice)){
-      doCat <- TRUE
-    } else {
-      doCat <- input$mapQChoice
-    }
-    doQMap(rV$allData, rV$mapArgs$filterByCountry, doCat)
   })
   
 }
