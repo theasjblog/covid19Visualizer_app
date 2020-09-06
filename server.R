@@ -189,7 +189,7 @@ server <- function(input, output, session) {
   
   observeEvent(list(input$chooseDayMap, input$plotMetric, input$chooseCountryMap,
                     input$plotType),{
-              print(input$plotType)
+              
                       if(!is.null(input$plotType)){
                         
                         plotType <- switch (input$plotType,
