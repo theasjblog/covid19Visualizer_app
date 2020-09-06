@@ -166,7 +166,8 @@ server <- function(input, output, session) {
   output$plotMetricUI <- renderUI({
     req(rV$allData)
     req(input$plotType)
-    req(!input$plotType %in% c('doMapGBQuarantine_binary', 'doMapGBQuarantine'))
+    req(!input$plotType %in% c('In/Out for UK quarantine',
+                               'Total past 7 days normalised'))
     selectInput('plotMetric', 'Metric to plot',
                 choices = c('cases', 'deaths', 'recovered'), selected = 'cases',
                 multiple = FALSE)
