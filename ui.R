@@ -12,6 +12,7 @@ library('countrycode')
 library('rgeos')
 library('stringr')
 library('reshape2')
+library('tmap')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
@@ -64,6 +65,7 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                               )
                      ),
                      uiOutput('countryMapUI'),
+                     uiOutput('mapTitleUI'),
                      plotOutput('mapUI'),
                      uiOutput('markdownMapUI')
                    )

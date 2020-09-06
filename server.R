@@ -22,16 +22,29 @@ server <- function(input, output, session) {
                                               {getJHU()}),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
-                       mapArgs = list(plotMetric = 'cases',
-                                      filterByCountry = 'Italy',
-                                      chosenDay = NULL,
-                                      plotType = 'doMapGBQuarantine_binary'))
+                       world = NULL,
+                       mapArgs = NULL)#list(plotMetric = 'cases',
+                                      #filterByCountry = 'Italy',
+                                      #chosenDay = NULL,
+                                      #plotType = 'doMapGBQuarantine_binary'))
   
   
   
   output$showPlotInfoUI <- renderUI({
     req(rV$allData)
     includeMarkdown('./vignettes/plotDescription.md')
+  })
+  
+  output$mapTitleUI <- renderUI({
+    req(rV$world)
+    plotTitle <- tryCatch(
+      getMapTitle(world = rV$world,
+               plotMetric = rV$mapArgs$plotMetric,
+               filterByCountry = rV$mapArgs$filterByCountry,
+               chosenDay = rV$mapArgs$chosenDay,
+               plotType = rV$mapArgs$plotType),
+      error = function(err){})
+    p(plotTitle)
   })
   
   output$markdownMapUI <- renderUI({
@@ -176,11 +189,11 @@ server <- function(input, output, session) {
   
   observeEvent(list(input$chooseDayMap, input$plotMetric, input$chooseCountryMap,
                     input$plotType),{
-              
+              print(input$plotType)
                       if(!is.null(input$plotType)){
                         
                         plotType <- switch (input$plotType,
-                              'Normalised_trend' = 'doMapTrend_normalise',
+                              'Normalised trend' = 'doMapTrend_normalise',
                               'Trend' = 'doMapTrend',
                               'Rate' = 'doMapDataRate_raw',
                               'Normalised rate' = 'doMapDataRate_normalised',
@@ -205,19 +218,25 @@ server <- function(input, output, session) {
                     })
   
   
+  observeEvent(rV$mapArgs,{
+
+    rV$world <- tryCatch(
+      getWorld(plotData = rV$allData,
+               plotMetric = rV$mapArgs$plotMetric,
+               filterByCountry = rV$mapArgs$filterByCountry,
+               chosenDay = rV$mapArgs$chosenDay,
+               plotType = rV$mapArgs$plotType),
+      error = function(err){})
+  })
   
   output$mapUI <- renderPlot({
-    req(rV$allData)
-    req(rV$mapArgs)
-    
-    
+    req(rV$world)
     tryCatch(
-      withProgress(message = 'Loading map',
-                   {plotMap(plotData = rV$allData,
-                            plotMetric = rV$mapArgs$plotMetric,
-                            filterByCountry = rV$mapArgs$filterByCountry,
-                            chosenDay = rV$mapArgs$chosenDay,
-                            plotType = rV$mapArgs$plotType)}),
+      plotMap(world = rV$world,
+               plotMetric = rV$mapArgs$plotMetric,
+               filterByCountry = rV$mapArgs$filterByCountry,
+               chosenDay = rV$mapArgs$chosenDay,
+               plotType = rV$mapArgs$plotType),
       error = function(err){})
     
   })
