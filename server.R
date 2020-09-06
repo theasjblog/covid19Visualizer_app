@@ -28,12 +28,16 @@ server <- function(input, output, session) {
                                       plotType = 'doMapGBQuarantine_binary'))
   
   
-  output$allDataTable <- renderTable({
+  
+  output$showPlotInfoUI <- renderUI({
     req(rV$allData)
-    head(rV$allData,2)
+    includeMarkdown('./vignettes/plotDescription.md')
   })
   
-  
+  output$markdownMapUI <- renderUI({
+    req(rV$allData)
+    includeMarkdown('./vignettes/mapDescription.md')
+  })
   output$chooseScaleUI <- renderUI({
     req(rV$allData)
     selectInput('chooseScale', 'Scale',
@@ -158,20 +162,35 @@ server <- function(input, output, session) {
   output$plotTypeUI <- renderUI({
     req(rV$allData)
     selectInput('plotType', 'Type of plot',
-                choices = c('doMapTrend_normalise', 'doMapTrend',
-                            'doMapDataRate_raw', 'doMapDataRate_normalised',
-                            'doMapGBQuarantine_binary', 'doMapGBQuarantine',
-                            'doMapData_raw', 'doMapData_normalised'),
-                selected = 'doMapGBQuarantine_binary',
+                choices = c('Trend',
+                            'Normalised trend',
+                            'Rate',
+                            'Normalised rate',
+                            'In/Out for UK quarantine',
+                            'Total past 7 days normalised',
+                            'Total number',
+                            'Total number normalised'),
+                selected = 'In/Out for UK quarantine',
                 multiple = FALSE)
   })
   
-  observeEvent(list(input$chooseDayMap,
-                    input$plotMetric, input$chooseCountryMap,
+  observeEvent(list(input$chooseDayMap, input$plotMetric, input$chooseCountryMap,
                     input$plotType),{
               
-                      if(!is.null(input$plotType) & !is.null(input$chooseDayMap)){
-                        if(input$plotType %in% c('doMapGBQuarantine_binary',
+                      if(!is.null(input$plotType)){
+                        
+                        plotType <- switch (input$plotType,
+                              'Normalised_trend' = 'doMapTrend_normalise',
+                              'Trend' = 'doMapTrend',
+                              'Rate' = 'doMapDataRate_raw',
+                              'Normalised rate' = 'doMapDataRate_normalised',
+                              'In/Out for UK quarantine' = 'doMapGBQuarantine_binary',
+                              'Total past 7 days normalised' = 'doMapGBQuarantine',
+                              'Total number' = 'doMapData_raw',
+                              'Total number normalised' = 'doMapData_normalised'
+                        )
+                
+                        if(plotType %in% c('doMapGBQuarantine_binary',
                                                  'doMapGBQuarantine')){
                           plotMetric <- 'cases'
                         } else {
@@ -180,7 +199,7 @@ server <- function(input, output, session) {
                         rV$mapArgs <- list(plotMetric = plotMetric,
                                            filterByCountry = input$chooseCountryMap,
                                            chosenDay = input$chooseDayMap,
-                                           plotType = input$plotType)
+                                           plotType = plotType)
                         
                       }
                     })

@@ -34,20 +34,17 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                                      uiOutput('chooseNormaliseUI')
                               )
                             ),
+                            uiOutput('choosePlotLimUI'),
                             uiOutput('chooseCountryUI'),
                             fluidRow(
                               column(6,
                                      plotOutput('doPlotUI'),
-                                     fluidRow(
-                                      column(12,
-                                             uiOutput('choosePlotLimUI')
-                                             )
-                                     )
                               ),
                               column(6,
                                      plotOutput('allPlotsUI')
                               )
-                            )
+                            ),
+                            uiOutput('showPlotInfoUI')
                           ),
                           
     
@@ -67,7 +64,8 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                               )
                      ),
                      uiOutput('countryMapUI'),
-                     plotOutput('mapUI')
+                     plotOutput('mapUI'),
+                     uiOutput('markdownMapUI')
                    )
                  ),
                  tabPanel('Background',

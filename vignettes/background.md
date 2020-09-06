@@ -1,17 +1,19 @@
 ## Introduction
 
-Simple data visualizer for COVID-19 diffusion.
+Simple data visualizer for COVID-19 spread.
 
 ## Data
 
 Data is provided by Johns Hopkins University (JHU) and is obtained from <https://github.com/CSSEGISandData/COVID-19>. 
 
-JHU university refreshes the data daily, and new data is fetched every time the app is loaded.
+JHU university refreshes the data daily, and new data is fetched every day.
 
-## Data exploration
+## Plots
 
-Once the data is loaded, a set of controls will become available to filter and the dataset and produce plots for specific comination of metrics (cases, deaths and recovered) and countries.
+Once the data is loaded, a set of controls will become available to filter and the dataset and produce plots for specific combination of metrics (`cases`, `deaths` and `recovered`) and countries.
 
-The plots can be plot in linear of log10 scale.
+## Maps
 
-It is possible to plot raw numbers of cases/deaths/cases, or the rate, which is calculated as the difference in the number at any given day minus the number at the day before. 
+As for plots, a number of maps can be produced to visualize the spread of COVID-19 across the globe.
+
+
