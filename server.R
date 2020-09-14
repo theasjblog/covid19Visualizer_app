@@ -23,10 +23,7 @@ server <- function(input, output, session) {
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
                        world = NULL,
-                       mapArgs = NULL)#list(plotMetric = 'cases',
-                                      #filterByCountry = 'Italy',
-                                      #chosenDay = NULL,
-                                      #plotType = 'doMapGBQuarantine_binary'))
+                       mapArgs = NULL)
   
   
   
@@ -105,7 +102,7 @@ server <- function(input, output, session) {
                     input$chooseDiff, input$choosePlotLim, input$chooseSmooth,
                     input$chooseNormalise),{
                       req(rV$allData)
-                      req(length(input$chooseCountry)>0)
+                      #req(length(input$chooseCountry)>0)
                       req(input$chooseMetric %in% rV$allData@populationDf$type)
                       
                       rV$doPlotGgplot <- doPlot(dataObj = rV$allData,
@@ -220,7 +217,7 @@ server <- function(input, output, session) {
   
   
   observeEvent(rV$mapArgs,{
-
+print(rV$mapArgs$filterByCountry)
     rV$world <- tryCatch(
       getWorld(plotData = rV$allData,
                plotMetric = rV$mapArgs$plotMetric,
@@ -230,14 +227,11 @@ server <- function(input, output, session) {
       error = function(err){})
   })
   
+  
   output$mapUI <- renderPlot({
     req(rV$world)
     tryCatch(
-      plotMap(world = rV$world,
-               plotMetric = rV$mapArgs$plotMetric,
-               filterByCountry = rV$mapArgs$filterByCountry,
-               chosenDay = rV$mapArgs$chosenDay,
-               plotType = rV$mapArgs$plotType),
+      plotMap(world = rV$world),
       error = function(err){})
     
   })
