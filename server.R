@@ -18,14 +18,32 @@ server <- function(input, output, session) {
   # REACTIVE VALUES
   rV <- reactiveValues(loadCode = withProgress(message = 'Loading app',
                                                {loadCode('master')}),
-                       allData = withProgress(message = 'Retriving data from JHU',
-                                              {getJHU()}),
+                       allData = readRDS('allData.rds'),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
                        world = NULL,
                        mapArgs = NULL)
   
   
+  output$manualRefreshUI <- renderUI({
+    req(rV$allData)
+    rawData <- slot(rV$allData, 'JHUData_raw')
+    lastDate <- colnames(rawData)[ncol(rawData)-1]
+    lastDate <- getDates(lastDate)
+    lastDate <- format(as.Date(lastDate), '%d %B %Y')
+    tagList(
+      h6('Last time refreshed: ', lastDate, '.'),
+      h6('To refresh the app with the latest data click the button below. This might take a few seconds.'),
+      actionButton('manualRefresh', 'Refresh Data')
+    )
+  })
+  
+  observeEvent(input$manualRefresh,{
+    withProgress(message = 'Retriving new data from JHU',
+                 {refreshJHU()})
+    rV$allData <- withProgress(message = 'Preparing data',
+                               {getJHU()})
+  })
   
   output$showPlotInfoUI <- renderUI({
     req(rV$allData)

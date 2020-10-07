@@ -18,6 +18,7 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                  #theme = shinytheme('united'),
                  tabPanel('Main',
                           wellPanel(
+                            uiOutput('manualRefreshUI'),
                             fluidRow(
                               column(3,
                                      uiOutput('chooseScaleUI')
