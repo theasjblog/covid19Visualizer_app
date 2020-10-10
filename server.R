@@ -4,10 +4,10 @@ server <- function(input, output, session) {
   # workaround is to download the repo here and source the R folder
   loadCode <- function(branchName){
     
-    download.file(url = paste0("https://github.com/theasjblog/covid19_package/archive/",branchName,".zip")
-                  , destfile = "covid19Package.zip")
-    unzip(zipfile = "covid19Package.zip")
-    
+    #download.file(url = paste0("https://github.com/theasjblog/covid19_package/archive/",branchName,".zip")
+    #              , destfile = "covid19Package.zip")
+    #unzip(zipfile = "covid19Package.zip")
+
     listFiles <- list.files(paste0('./covid19_package-',branchName,'/R'))
     for (i in listFiles){
       source(paste0('./covid19_package-', branchName, '/R/', i))
@@ -18,7 +18,7 @@ server <- function(input, output, session) {
   # REACTIVE VALUES
   rV <- reactiveValues(loadCode = withProgress(message = 'Loading app',
                                                {loadCode('master')}),
-                       allData = readRDS('allData.rds'),
+                       allData = readRDS(here::here('data', 'allData.rds')),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
                        world = NULL,
