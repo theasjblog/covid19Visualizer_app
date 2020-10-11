@@ -1,23 +1,18 @@
 server <- function(input, output, session) {
-  
-  # publishing to shiny server from package fails
-  # workaround is to download the repo here and source the R folder
-  loadCode <- function(branchName){
-    
-    #download.file(url = paste0("https://github.com/theasjblog/covid19_package/archive/",branchName,".zip")
-    #              , destfile = "covid19Package.zip")
-    #unzip(zipfile = "covid19Package.zip")
 
-    listFiles <- list.files(paste0('./covid19_package-',branchName,'/R'))
+# set up ------------------------------------------------------------------
+  # publishing to shiny server from package fails
+  # workaround is to download the repo 
+  # and source the R folder
+  loadCode <- function(){
+    listFiles <- list.files('./auxFunctions')
     for (i in listFiles){
-      source(paste0('./covid19_package-', branchName, '/R/', i))
+      source(paste0('./auxFunctions/', i))
     }
   }
-  
-  
   # REACTIVE VALUES
   rV <- reactiveValues(loadCode = withProgress(message = 'Loading app',
-                                               {loadCode('master')}),
+                                               {loadCode()}),
                        allData = readRDS(here::here('data', 'allData.rds')),
                        doPlotGgplot = NULL,
                        allMetricsGgplot = NULL,
