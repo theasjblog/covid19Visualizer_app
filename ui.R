@@ -13,6 +13,7 @@ library('rgeos')
 library('stringr')
 library('reshape2')
 library('tmap')
+library('plotly')
 
 ui <- navbarPage(title = 'COVID 19 Tracker',
                  tabPanel('Main',
@@ -39,10 +40,10 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                             uiOutput('chooseCountryUI'),
                             fluidRow(
                               column(6,
-                                     plotOutput('doPlotUI'),
+                                     plotlyOutput('doPlotUI'),
                               ),
                               column(6,
-                                     plotOutput('allPlotsUI')
+                                     plotlyOutput('allPlotsUI')
                               )
                             ),
                             uiOutput('showPlotInfoUI')
