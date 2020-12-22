@@ -8,3 +8,4 @@ JHUData-*.zip
 covid19Package.zip
 covid19_package-*/
 rsconnect/
+data/*.rds
