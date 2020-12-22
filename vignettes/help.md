@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 
 Simple data visualizer for COVID-19 spread.
 
@@ -16,4 +16,9 @@ Once the data is loaded, a set of controls will become available to filter and t
 
 As for plots, a number of maps can be produced to visualize the spread of COVID-19 across the globe.
 
-
+# About
+<b>Covid-19 Visualizer</b>
+<br/>
+Version: V0.1.0
+<br/>
+Author: Adrian Steve Joseph

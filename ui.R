@@ -1,21 +1,8 @@
 # Define UI for app that draws a histogram ----
-library('shinythemes')
-library('dplyr')
-library('tidyr')
-library('ggplot2')
-library('here')
-library('markdown')
-library('zoo')
-library('rnaturalearth')
-library('rnaturalearthdata')
-library('countrycode')
-library('rgeos')
-library('stringr')
-library('reshape2')
-library('tmap')
-library('plotly')
+source('dependencies.R')
+source('config.R')
 
-ui <- navbarPage(title = 'COVID 19 Tracker',
+ui <- navbarPage(title = appName,
                  tabPanel('Main',
                           wellPanel(
                             uiOutput('manualRefreshUI'),
@@ -51,7 +38,7 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
     
                           ),
                  tabPanel(
-                   'Map',
+                   'Maps',
                    wellPanel(
                      fluidRow(
                        column(4,
@@ -70,10 +57,6 @@ ui <- navbarPage(title = 'COVID 19 Tracker',
                      uiOutput('markdownMapUI')
                    )
                  ),
-                 tabPanel('Background',
-                         includeMarkdown('vignettes/background.md')),
-                 tabPanel('Coming next',
-                         includeMarkdown('vignettes/coming.md')),
-                 tabPanel('About',
-                         includeMarkdown('vignettes/about.md'))
+                 tabPanel('Help',
+                         includeMarkdown('vignettes/help.md'))
 )
