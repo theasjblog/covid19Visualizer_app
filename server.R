@@ -115,7 +115,6 @@ server <- function(input, output, session) {
                     input$chooseDiff, input$choosePlotLim, input$chooseSmooth,
                     input$chooseNormalise),{
                       req(rV$allData)
-                      #req(length(input$chooseCountry)>0)
                       req(input$chooseMetric %in% rV$allData@populationDf$type)
                       
                       rV$doPlotGgplot <- doPlot(dataObj = rV$allData,
@@ -137,14 +136,14 @@ server <- function(input, output, session) {
                                                             plotLim = input$choosePlotLim)
                     })
   
-  output$doPlotUI <- renderPlot({
+  output$doPlotUI <- renderPlotly({
     req(rV$doPlotGgplot)
-    rV$doPlotGgplot
+    ggplotly(rV$doPlotGgplot, tooltip = 'text')
   })
   
-  output$allPlotsUI <- renderPlot({
+  output$allPlotsUI <- renderPlotly({
     req(rV$allMetricsGgplot)
-    rV$allMetricsGgplot
+    ggplotly(rV$allMetricsGgplot, tooltip = 'text')
   })
   
   
