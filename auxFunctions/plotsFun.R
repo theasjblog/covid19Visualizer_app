@@ -168,7 +168,7 @@ plotAllMetrics <- function(dataObj, geographyFilter = NULL,
   values$text <- paste0('Date: ', values$Date, '\n',
                         'Area: ', values$Area, '\n',
                         'Type: ', values$type, '\n',
-                        str_to_title(typePlot), ': ',
+                        str_to_title(values$type), ': ',
                         round(values$value, digits = 0))
   
   p <- ggplot(data = values, aes(x = Date,
