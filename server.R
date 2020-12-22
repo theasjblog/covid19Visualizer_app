@@ -1,6 +1,6 @@
 server <- function(input, output, session) {
-
-# set up ------------------------------------------------------------------
+  
+  # set up ------------------------------------------------------------------
   # publishing to shiny server from package fails
   # workaround is to download the repo 
   # and source the R folder
@@ -49,10 +49,10 @@ server <- function(input, output, session) {
     req(rV$world)
     plotTitle <- tryCatch(
       getMapTitle(world = rV$world,
-               plotMetric = rV$mapArgs$plotMetric,
-               filterByCountry = rV$mapArgs$filterByCountry,
-               chosenDay = rV$mapArgs$chosenDay,
-               plotType = rV$mapArgs$plotType),
+                  plotMetric = rV$mapArgs$plotMetric,
+                  filterByCountry = rV$mapArgs$filterByCountry,
+                  chosenDay = rV$mapArgs$chosenDay,
+                  plotType = rV$mapArgs$plotType),
       error = function(err){})
     p(plotTitle)
   })
@@ -95,15 +95,6 @@ server <- function(input, output, session) {
                 multiple = TRUE)
   })
   
-  
-  output$choosePlotLimUI <- renderUI({
-    req(rV$allData)
-    maxVal <- ncol(rV$allData@JHUData_raw)-1
-    sliderInput('choosePlotLim', label = 'Dates limits', min = 1, 
-                max = maxVal, value = c(1, maxVal), step = 1)
-    
-  })
-  
   output$chooseMetricUI <- renderUI({
     req(rV$allData)
     selectInput('chooseMetric', 'Metric',
@@ -112,7 +103,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(list(input$chooseCountry, input$chooseScale, input$chooseMetric,
-                    input$chooseDiff, input$choosePlotLim, input$chooseSmooth,
+                    input$chooseDiff, input$chooseSmooth,
                     input$chooseNormalise),{
                       req(rV$allData)
                       req(input$chooseMetric %in% rV$allData@populationDf$type)
@@ -121,7 +112,6 @@ server <- function(input, output, session) {
                                                 typePlot = input$chooseMetric,
                                                 geographyFilter = input$chooseCountry,
                                                 scale = input$chooseScale,
-                                                plotLim = input$choosePlotLim,
                                                 plotRate = input$chooseDiff,
                                                 smooth = input$chooseSmooth,
                                                 normalizeByPop = input$chooseNormalise)
@@ -132,8 +122,7 @@ server <- function(input, output, session) {
                                                             plotRate = input$chooseDiff,
                                                             smooth = input$chooseSmooth,
                                                             scale = input$chooseScale,
-                                                            normalizeByPop = input$chooseNormalise,
-                                                            plotLim = input$choosePlotLim)
+                                                            normalizeByPop = input$chooseNormalise)
                     })
   
   output$doPlotUI <- renderPlotly({
@@ -151,11 +140,11 @@ server <- function(input, output, session) {
   output$countryMapUI <- renderUI({
     req(rV$allData)
     
-        avaCount <- unique(rV$allData@populationDf$Country[!is.na(rV$allData@populationDf$Population)])
-        selectInput('chooseCountryMap', 'Country',
-                    choices = avaCount,
-                    selected = 'Italy',
-                    multiple = TRUE)
+    avaCount <- unique(rV$allData@populationDf$Country[!is.na(rV$allData@populationDf$Population)])
+    selectInput('chooseCountryMap', 'Country',
+                choices = avaCount,
+                selected = 'Italy',
+                multiple = TRUE)
   })
   
   output$dayMapUI <- renderUI({
@@ -199,22 +188,22 @@ server <- function(input, output, session) {
   
   observeEvent(list(input$chooseDayMap, input$plotMetric, input$chooseCountryMap,
                     input$plotType),{
-              
+                      
                       if(!is.null(input$plotType)){
                         
                         plotType <- switch (input$plotType,
-                              'Normalised trend' = 'doMapTrend_normalise',
-                              'Trend' = 'doMapTrend',
-                              'Rate' = 'doMapDataRate_raw',
-                              'Normalised rate' = 'doMapDataRate_normalised',
-                              'In/Out for UK quarantine' = 'doMapGBQuarantine_binary',
-                              'Total past 7 days normalised' = 'doMapGBQuarantine',
-                              'Total number' = 'doMapData_raw',
-                              'Total number normalised' = 'doMapData_normalised'
+                                            'Normalised trend' = 'doMapTrend_normalise',
+                                            'Trend' = 'doMapTrend',
+                                            'Rate' = 'doMapDataRate_raw',
+                                            'Normalised rate' = 'doMapDataRate_normalised',
+                                            'In/Out for UK quarantine' = 'doMapGBQuarantine_binary',
+                                            'Total past 7 days normalised' = 'doMapGBQuarantine',
+                                            'Total number' = 'doMapData_raw',
+                                            'Total number normalised' = 'doMapData_normalised'
                         )
-                
+                        
                         if(plotType %in% c('doMapGBQuarantine_binary',
-                                                 'doMapGBQuarantine')){
+                                           'doMapGBQuarantine')){
                           plotMetric <- 'cases'
                         } else {
                           plotMetric <- input$plotMetric
@@ -229,13 +218,14 @@ server <- function(input, output, session) {
   
   
   observeEvent(rV$mapArgs,{
-print(rV$mapArgs$filterByCountry)
+    
     rV$world <- tryCatch(
-      getWorld(plotData = rV$allData,
-               plotMetric = rV$mapArgs$plotMetric,
-               filterByCountry = rV$mapArgs$filterByCountry,
-               chosenDay = rV$mapArgs$chosenDay,
-               plotType = rV$mapArgs$plotType),
+      withProgress(message = 'Refreshing map',
+                   {getWorld(plotData = rV$allData,
+                             plotMetric = rV$mapArgs$plotMetric,
+                             filterByCountry = rV$mapArgs$filterByCountry,
+                             chosenDay = rV$mapArgs$chosenDay,
+                             plotType = rV$mapArgs$plotType)}),
       error = function(err){})
   })
   
@@ -243,7 +233,8 @@ print(rV$mapArgs$filterByCountry)
   output$mapUI <- renderPlot({
     req(rV$world)
     tryCatch(
-      plotMap(world = rV$world),
+      withProgress(message = 'Refreshing map',
+                   {plotMap(world = rV$world)}),
       error = function(err){})
     
   })
