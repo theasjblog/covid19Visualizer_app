@@ -1,3 +1,5 @@
+library(dplyr)
+library(stringr)
 saveAllData <- function(branchName = 'master'){
 # remove old version of covid19Visualizer ---------------------------------
   listFiles <- list.files('./auxFunctions')
