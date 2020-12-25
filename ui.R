@@ -1,79 +1,27 @@
-# Define UI for app that draws a histogram ----
-library('shinythemes')
-library('dplyr')
-library('tidyr')
-library('ggplot2')
-library('here')
-library('markdown')
-library('zoo')
-library('rnaturalearth')
-library('rnaturalearthdata')
-library('countrycode')
-library('rgeos')
-library('stringr')
-library('reshape2')
-library('tmap')
-library('plotly')
+# load dependencies
+source('dependencies.R')
+# load general app configuration i.e. app name and version
+source('config.R')
+# source supporting functions. These should be an independent package
+for (i in list.files('./auxFunctions')) {
+  source(paste0('./auxFunctions/', i))
+}
 
-ui <- navbarPage(title = 'COVID 19 Tracker',
-                 tabPanel('Main',
-                          wellPanel(
-                            uiOutput('manualRefreshUI'),
-                            fluidRow(
-                              column(3,
-                                     uiOutput('chooseScaleUI')
-                                     ),
-                              column(3,
-                                     uiOutput('chooseMetricUI')
-                                     ),
-                              column(2,
-                                     uiOutput('chooseDiffUI')
-                                    ),
-                              column(2,
-                                     uiOutput('chooseSmoothUI')
-                              ),
-                              column(2,
-                                     uiOutput('chooseNormaliseUI')
-                              )
-                            ),
-                            uiOutput('chooseCountryUI'),
-                            fluidRow(
-                              column(6,
-                                     plotlyOutput('doPlotUI'),
-                              ),
-                              column(6,
-                                     plotlyOutput('allPlotsUI')
-                              )
-                            ),
-                            uiOutput('showPlotInfoUI')
-                          ),
-                          
-    
-                          ),
-                 tabPanel(
-                   'Map',
-                   wellPanel(
-                     fluidRow(
-                       column(4,
-                              uiOutput('dayMapUI')
-                       ),
-                       column(4,
-                              uiOutput('plotTypeUI')
-                       ),
-                       column(4,
-                              uiOutput('plotMetricUI')
-                              )
-                     ),
-                     uiOutput('countryMapUI'),
-                     uiOutput('mapTitleUI'),
-                     plotOutput('mapUI'),
-                     uiOutput('markdownMapUI')
-                   )
-                 ),
-                 tabPanel('Background',
-                         includeMarkdown('vignettes/background.md')),
-                 tabPanel('Coming next',
-                         includeMarkdown('vignettes/coming.md')),
-                 tabPanel('About',
-                         includeMarkdown('vignettes/about.md'))
+# source modules
+for (i in list.files('./modules')) {
+  source(paste0('./modules/', i))
+}
+
+# define ui of the main app
+ui <- navbarPage(
+  title = appName,
+  tabPanel('Main',
+           # tab with the line plots
+           main_tab_ui('main_tab'),),
+  tabPanel('Maps',
+           # tab with maps
+           maps_tab_ui('maps_tab')),
+  tabPanel('Help',
+           # help tab
+           includeMarkdown('vignettes/help.md'))
 )

@@ -1,3 +1,5 @@
+library(dplyr)
+library(stringr)
 saveAllData <- function(branchName = 'master'){
 # remove old version of covid19Visualizer ---------------------------------
   listFiles <- list.files('./auxFunctions')
@@ -28,6 +30,9 @@ saveAllData <- function(branchName = 'master'){
   }
   refreshJHU()
   allData <- getJHU()
+  if (!dir.exists('./data')){
+    dir.create('./data')
+  }
   saveRDS(allData, './data/allData.rds')
   
 
