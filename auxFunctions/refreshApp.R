@@ -30,6 +30,9 @@ saveAllData <- function(branchName = 'master'){
   }
   refreshJHU()
   allData <- getJHU()
+  if (!dir.exists('./data')){
+    dir.create('./data')
+  }
   saveRDS(allData, './data/allData.rds')
   
 
