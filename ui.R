@@ -18,9 +18,9 @@ ui <- navbarPage(
   tabPanel('Main',
            # tab with the line plots
            main_tab_ui('main_tab'),),
-  tabPanel('Maps',
-           # tab with maps
-           maps_tab_ui('maps_tab')),
+  #tabPanel('Maps',
+  #         # tab with maps
+  #         maps_tab_ui('maps_tab')),
   tabPanel('Help',
            # help tab
            includeMarkdown('vignettes/help.md'))

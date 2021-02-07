@@ -5,130 +5,85 @@ main_tab_server <- function(id) {
                  # session scope
                  ns <- session$ns
                  # reactive values
-                 rV <- reactiveValues(allData = NULL, # the data to plot
-                                      doPlotGgplot = NULL, # single metric plot
-                                      allMetricsGgplot = NULL) # faceted plots
+                 rV <- reactiveValues(allCountries = sort(getOptions('groups', 'Country')),
+                                      allGroups = sort(getOptions('groups', 'groups')),
+                                      allMetrics = sort(getOptions('events', 'variable')),
+                                      countries = NULL,
+                                      groups = NULL,
+                                      optionsAre = NULL,
+                                      events = NULL,
+                                      poplation = NULL)
                  
-                 allData <- refresh_data_server('refreshData')
+                 refresh_data_server('refreshData')
                  
-                 observeEvent(allData(), {
-                   rV$allData <- allData()$allData
+                 output$groupOrCountryUI <- renderUI({
+                   radioButtons(ns('groupOrCountry'), 
+                                label = '',
+                                choices = c('Countries', 'Groups'), 
+                                selected = 'Countries')
                  })
                  
-                 observeEvent(rV$allData,{
-                   allData()$setState(rV$allData)
+                 output$selectMetricUI <- renderUI({
+                   selectInput(ns('selectMetric'),
+                               label = 'Metric', 
+                               choices = rV$allMetrics, 
+                               selected = rV$allMetrics[1], 
+                               multiple = TRUE)
                  })
                  
-                 output$showPlotInfoUI <- renderUI({
-                   req(rV$allData)
-                   includeMarkdown('./vignettes/plotDescription.md')
-                 })
-                 
-                 
-                 output$chooseScaleUI <- renderUI({
-                   req(rV$allData)
-                   selectInput(
-                     ns('chooseScale'),
-                     'Scale',
-                     choices = c('linear', 'log'),
-                     selected = 'linear'
-                   )
-                 })
-                 
-                 output$chooseDiffUI <- renderUI({
-                   req(rV$allData)
-                   checkboxInput(ns('chooseDiff'), 'Plot rate',
-                                 value = TRUE)
-                 })
-                 
-                 output$chooseNormaliseUI <- renderUI({
-                   req(rV$allData)
-                   checkboxInput(ns('chooseNormalise'), 'Normalise by population',
-                                 value = FALSE)
-                 })
-                 
-                 output$chooseSmoothUI <- renderUI({
-                   req(rV$allData)
-                   checkboxInput(ns('chooseSmooth'), 'Smooth plot',
-                                 value = TRUE)
-                 })
-                 
-                 output$chooseCountryUI <- renderUI({
-                   req(rV$allData)
-                   optionsAre <- slot(rV$allData, 'keys')
-                   selectInput(
-                     ns('chooseCountry'),
-                     'Country',
-                     choices = unique(optionsAre),
-                     selected = 'Italy',
-                     multiple = TRUE
-                   )
-                 })
-                 
-                 output$chooseMetricUI <- renderUI({
-                   req(rV$allData)
-                   selectInput(
-                     ns('chooseMetric'),
-                     'Metric',
-                     choices = c('cases', 'deaths', 'recovered'),
-                     selected = 'cases'
-                   )
-                 })
-                 
-                 observeEvent(
-                   list(
-                     input$chooseCountry,
-                     input$chooseScale,
-                     input$chooseMetric,
-                     input$chooseDiff,
-                     input$chooseSmooth,
-                     input$chooseNormalise
-                   ),
-                   {
-                     req(rV$allData)
-                     req(input$chooseMetric %in% slot(rV$allData, 'populationDf')$type)
-                     
-                     rV$doPlotGgplot <-
-                       doPlot(
-                         dataObj = rV$allData,
-                         typePlot = input$chooseMetric,
-                         geographyFilter = input$chooseCountry,
-                         scale = input$chooseScale,
-                         plotRate = input$chooseDiff,
-                         smooth = input$chooseSmooth,
-                         normalizeByPop = input$chooseNormalise
-                       )
-                     
-                     
-                     rV$allMetricsGgplot <-
-                       plotAllMetrics(
-                         dataObj = rV$allData,
-                         geographyFilter = input$chooseCountry,
-                         plotRate = input$chooseDiff,
-                         smooth = input$chooseSmooth,
-                         scale = input$chooseScale,
-                         normalizeByPop = input$chooseNormalise
-                       )
+                 observeEvent(input$groupOrCountry,{
+                   if(input$groupOrCountry == 'Countries'){
+                     rV$groups <- NULL
+                     rV$countries <- 1
+                     rV$optionsAre <- rV$allCountries
+                   } else {
+                     rV$countries <- NULL
+                     rV$groups <- 1
+                     rV$optionsAre <- rV$allGroups
                    }
-                 )
+                 })
+                 
+                 output$groupOrCountrySelectorUI <- renderUI({
+                   req(rV$optionsAre)
+                   selectInput(ns('groupOrCountrySelector'),
+                               label = '', choices = rV$optionsAre, 
+                               selected = rV$optionsAre[1], 
+                               multiple = TRUE)
+                 })
                  
                  output$doPlotUI <- renderPlotly({
-                   req(rV$doPlotGgplot)
-                   ggplotly(rV$doPlotGgplot, tooltip = 'text')
+                   req(input$groupOrCountrySelector)
+                   req(input$selectMetric)
+                   population <- getPopulationDb(input$groupOrCountrySelector)
+                   
+                   events <- getEventsDb(input$groupOrCountrySelector,
+                                         input$selectMetric)
+                   p <- eventsPlot(events, population, NULL, 100)
+                   #print(p)
+                   ggplotly(p, tooltip = 'text')
                  })
                  
-                 output$allPlotsUI <- renderPlotly({
-                   req(rV$allMetricsGgplot)
-                   ggplotly(rV$allMetricsGgplot, tooltip = 'text')
+                 output$doMapUI <- renderPlot({
+                   req(input$groupOrCountrySelector)
+                   req(input$selectMetric)
+                   if(!is.null(rV$groups)){
+                     groups <- getCountriesFromGroups(input$groupOrCountrySelector)
+                     countries <- unique(groups$Country)
+                   } else {
+                     countries <- input$groupOrCountrySelector
+                   }
+                   population <- getPopulationDb(countries)
+                   events <- getEventsMapDb(countries,
+                                            input$selectMetric[1],
+                                            getLastDate(),
+                                            NULL,100)
+                   if(is.null(rV$groups)){
+                     doFacet <- TRUE
+                   } else {
+                     doFacet <- FALSE
+                   }
+                   p <- doMap(events,doFacet)
+                   p
                  })
-                 
-                 return(reactive(
-                   list(
-                     allData = rV$allData,
-                     setState = function(allData = NULL){
-                       rV$allData <- allData
-                     }
-                   )
-                 ))
                })
 }
