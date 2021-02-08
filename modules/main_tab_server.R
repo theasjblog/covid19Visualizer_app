@@ -59,8 +59,12 @@ main_tab_server <- function(id) {
                    events <- getEventsDb(input$groupOrCountrySelector,
                                          input$selectMetric)
                    p <- eventsPlot(events, population, NULL, 100)
-                   #print(p)
-                   ggplotly(p, tooltip = 'text')
+                   ggplotly(p, tooltip = 'text')  %>%
+                     layout(legend = list(
+                       orientation = "h",
+                       y=-0.1
+                     )
+                     )
                  })
                  
                  output$doMapUI <- renderPlot({

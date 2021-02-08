@@ -14,14 +14,12 @@ main_tab_ui <- function(id) {
       column(3,
              uiOutput(ns('selectMetricUI')))
     ),
-    fluidRow(column(12,
+    fluidRow(column(6,
                     # show the plot with the single metric
                     plotlyOutput(ns(
                       'doPlotUI'
-                    )))
-             
-    ),
-    fluidRow(column(12,
+                    ))),
+             column(6,
                     # show the plot with the single metric
                     plotOutput(ns(
                       'doMapUI'
