@@ -10,3 +10,4 @@ covid19_package-*/
 rsconnect/
 data/*.rds
 *.xlsx
+testdb
