@@ -23,7 +23,8 @@ main_tab_ui <- function(id) {
                     # show the plot with the single metric
                     plotOutput(ns(
                       'doMapUI'
-                    )))
+                    ))
+                    )
              
     )
   )

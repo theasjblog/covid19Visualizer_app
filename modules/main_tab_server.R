@@ -54,10 +54,20 @@ main_tab_server <- function(id) {
                  output$doPlotUI <- renderPlotly({
                    req(input$groupOrCountrySelector)
                    req(input$selectMetric)
-                   population <- getPopulationDb(input$groupOrCountrySelector)
-                   
-                   events <- getEventsDb(input$groupOrCountrySelector,
+                   if(!is.null(rV$groups)){
+                     groupsAre <- input$groupOrCountrySelector
+                     groups <- getCountriesFromGroups(groupsAre)
+                     countries <- unique(groups$Country)
+                   } else {
+                     countries <- input$groupOrCountrySelector
+                     groups <- NULL
+                   }
+                   population <- getPopulationDb(countries)
+                   events <- getEventsDb(countries,
                                          input$selectMetric)
+                   events <- aggregateCountries(events, groups)
+                   population <- aggregateCountries(population, groups)
+                   
                    p <- eventsPlot(events, population, NULL, 100)
                    ggplotly(p, tooltip = 'text')  %>%
                      layout(legend = list(
