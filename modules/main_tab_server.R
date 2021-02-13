@@ -10,10 +10,10 @@ main_tab_server <- function(id) {
                                       allMetrics = sort(getOptions(con, 'events', 'variable')),
                                       normaliseByOptions = sort(getOptions(con, 'population', 'variable')),
                                       optionsAre = NULL,
-                                      events = NULL,
-                                      population = NULL,
-                                      thePlot = NULL,
-                                      theMap = NULL
+                                      eventsDataPlot = NULL,
+                                      eventsDataMap = NULL,
+                                      populationDataPlot = NULL,
+                                      populationDataMap = NULL
                  )
                  
                  refresh_data_server('refreshData')
@@ -61,16 +61,13 @@ main_tab_server <- function(id) {
                  
                  observeEvent(list(input$groupOrCountry,
                                    input$groupOrCountrySelector,
-                                   input$selectMetric,
-                                   input$chooseIfNorm,
-                                   input$chooseNorm,
-                                   input$multiplyFactor),{
+                                   input$selectMetric),{
                                      
                                      # req does not work here for some reason
                                      validate(need(!is.null(input$groupOrCountry),''))
                                      validate(need(!is.null(input$groupOrCountrySelector),''))
                                      validate(need(!is.null(input$selectMetric),''))
-                                     validate(need(!is.null(input$chooseIfNorm),''))
+                                     
                                      
                                      date <- NULL
                                      if(input$groupOrCountry=='Countries'){
@@ -88,54 +85,63 @@ main_tab_server <- function(id) {
                                      if (!is.null(groups)){
                                        validate(need(all(groups %in% rV$allGroups),''))
                                      }
+                                     
                                      population <- getPopulationDb(con, groups, countries)
                                      events <- getEventsDb(con, groups, countries, date, input$selectMetric)
-                                     if(input$chooseIfNorm){
-                                       
-                                       validate(need(!is.null(input$multiplyFactor),''))
-                                       validate(need(!is.null(input$chooseNorm),''))
-                                       mf <- as.numeric(str_replace_all(input$multiplyFactor, ',',''))
-                                       eventsDataMap <- normaliseEvents(events,
-                                                                        population,
-                                                                        input$chooseNorm,
-                                                                        mf)
-                                       
-                                     } else {
-                                       eventsDataMap <- events
-                                     }
-                                     
-                                     eventsDataMap <- getMapData(con, eventsDataMap)
-                                     
+                                     eventsDataMap <- getMapData(con, events)
+                                     populationDataMap <- population
                                      if(input$groupOrCountry=='Groups'){
-                                       events <- aggregateCountries(con, events, groups)
-                                       population <- aggregateCountries(con, population, groups)
+                                       eventsDataPlot <- aggregateCountries(con, events, groups)
+                                       populationDataPlot <- aggregateCountries(con, population, groups)
+                                     } else {
+                                       eventsDataPlot <- events
+                                       populationDataPlot <- population
                                      }
+                                     
+                                     rV$eventsDataMap <- eventsDataMap
+                                     rV$eventsDataPlot <- eventsDataPlot
+                                     rV$populationDataMap <- populationDataMap
+                                     rV$populationDataPlot <- populationDataPlot
+                                     
+                                   })
+                 
+                 observeEvent(list(input$chooseNorm,
+                                   input$multiplyFactor,
+                                   input$chooseIfNorm),{
+                                     validate(need(!is.null(input$selectMetric),''))
                                      if(input$chooseIfNorm){
+
                                        validate(need(!is.null(input$multiplyFactor),''))
                                        validate(need(!is.null(input$chooseNorm),''))
-                                       
                                        mf <- as.numeric(str_replace_all(input$multiplyFactor, ',',''))
-                                       
-                                       events <- normaliseEvents(events,
-                                                                 population,
-                                                                 input$chooseNorm,
-                                                                 mf)
+                                       nb <- input$chooseNorm
+                                       eventsDataMapNorm <- normaliseEvents(rV$eventsDataMap,
+                                                                            rV$populationDataMap,
+                                                                            nb,
+                                                                            mf)
+                                       eventsDataPlotNorm <- normaliseEvents(rV$eventsDataPlot,
+                                                                            rV$populationDataPlot,
+                                                                            nb,
+                                                                            mf)
+                                     } else {
+                                       eventsDataMapNorm <- NULL
+                                       eventsDataPlotNorm <- NULL
                                      }
-                                     thePlot <- doPlot(events)
-                                     theMap <- doMap(eventsDataMap, mapFacet)
-                                     
-                                     rV$population <- population
-                                     rV$events <- events
-                                     rV$thePlot <- thePlot
-                                     rV$theMap <- theMap
-                                     
+                                     rV$eventsDataMapNorm <- eventsDataMapNorm
+                                     rV$eventsDataPlotNorm <- eventsDataPlotNorm
                                      
                                    })
                  
                  output$doPlotUI <- renderPlotly({
-                   req(rV$thePlot)
+                   validate(need(!is.null(rV$eventsDataPlot) | !is.null(rV$eventsDataPlotNorm),''))
+                   if (!is.null(rV$eventsDataPlotNorm)){
+                     events <- rV$eventsDataPlotNorm
+                   } else {
+                     events <- rV$eventsDataPlot
+                   }
+                   p <- doPlot(events)
                    tryCatch({
-                     ggplotly(rV$thePlot, tooltip = 'text')  %>%
+                     ggplotly(p, tooltip = 'text')  %>%
                        layout(legend = list(
                          orientation = "h",
                          y=-0.1
@@ -147,11 +153,23 @@ main_tab_server <- function(id) {
                  })
                  
                  output$doMapUI <- renderPlot({
-                   req(rV$theMap)
+                   validate(need(!is.null(rV$eventsDataMap) | !is.null(rV$eventsDataMapNorm),''))
+                   if (!is.null(rV$eventsDataMapNorm)){
+                     events <- rV$eventsDataMapNorm
+                   } else {
+                     events <- rV$eventsDataMap
+                   }
+                   mapFacet <- TRUE
+                   if(input$groupOrCountry=='Groups'){
+                     if(input$groupOrCountrySelector=='World'){
+                       mapFacet <- FALSE
+                     }
+                   }
+                   p <- doMap(events, mapFacet)
                    
-                   validate(need(nrow(rV$theMap$tm_shape$shp)>0,
+                   validate(need(nrow(p$tm_shape$shp)>0,
                                  ''))
-                   rV$theMap
+                   p
                    
                  })
                  
@@ -177,10 +195,11 @@ main_tab_server <- function(id) {
                  
                  output$dataView <- renderDT({
                    req(input$whichTable)
+                   
                    if(input$whichTable == 'Events'){
-                     rV$events
+                     displayEvents(rV$eventsDataPlot)
                    } else {
-                     rV$population
+                     displayPopulation(rV$populationDataPlot, NULL)
                    }
                  })
                  
