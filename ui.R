@@ -1,11 +1,11 @@
 # load dependencies
 source('dependencies.R')
-# load general app configuration i.e. app name and version
-source('config.R')
 # source supporting functions. These should be an independent package
 for (i in list.files('./auxFunctions')) {
   source(paste0('./auxFunctions/', i))
 }
+# load general app configuration i.e. app name and version
+source('config.R')
 
 # source modules
 for (i in list.files('./modules')) {
@@ -18,9 +18,6 @@ ui <- navbarPage(
   tabPanel('Main',
            # tab with the line plots
            main_tab_ui('main_tab'),),
-  tabPanel('Maps',
-           # tab with maps
-           maps_tab_ui('maps_tab')),
   tabPanel('Help',
            # help tab
            includeMarkdown('vignettes/help.md'))

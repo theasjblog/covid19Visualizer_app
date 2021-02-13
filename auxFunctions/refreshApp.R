@@ -1,5 +1,4 @@
-library(dplyr)
-library(stringr)
+source('dependencies.R')
 saveAllData <- function(branchName = 'master'){
 # remove old version of covid19Visualizer ---------------------------------
   listFiles <- list.files('./auxFunctions')
@@ -21,26 +20,9 @@ saveAllData <- function(branchName = 'master'){
     file.copy(from = paste0('./covid19_package-', branchName, '/R/', i), 
               to = paste0('./auxFunctions/', i), 
               overwrite = TRUE)
-  }
-  
-  # get net JHU data --------------------------------------------------------
-  listFiles <- list.files('./auxFunctions')
-  for (i in listFiles){
     source(paste0('./auxFunctions/', i))
   }
-  refreshJHU()
-  allData <- getJHU()
-  if (!dir.exists('./data')){
-    dir.create('./data')
-  }
-  saveRDS(allData, './data/allData.rds')
   
-
-# clean up ----------------------------------------------------------------
-  file.remove('covid19Package.zip')
-  unlink(paste0('./covid19_package-', branchName),
-         recursive=TRUE)
-  file.remove('JHUData-master.zip')
-  unlink('./COVID-19-master',
-         recursive=TRUE)
+  updateDb(createConnection())
+  
 }
