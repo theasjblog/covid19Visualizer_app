@@ -7,8 +7,9 @@ refresh_data_server <- function(id){
   moduleServer(id,
     function(input, output, session){
       ns <- session$ns
+      con <- createConnection()
       output$manualRefreshUI <- renderUI({
-        lastDate <- getLastDate()
+        lastDate <- getLastDate(con)
         tagList(
           h6('Last time refreshed: ', lastDate, '.'),
           h6(
@@ -23,7 +24,7 @@ refresh_data_server <- function(id){
         # get the new data
         withProgress(message = 'Getting new data',
                      {
-                       updateDb()
+                       updateDb(con)
                      })
         
       })

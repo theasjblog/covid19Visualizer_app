@@ -1,4 +1,5 @@
 library('shinythemes')
+library('DT')
 library('dplyr')
 library('tidyr')
 library('ggplot2')

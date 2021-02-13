@@ -23,6 +23,6 @@ saveAllData <- function(branchName = 'master'){
     source(paste0('./auxFunctions/', i))
   }
   
-  updateDb()
+  updateDb(createConnection())
   
 }

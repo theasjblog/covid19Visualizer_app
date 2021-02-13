@@ -12,7 +12,18 @@ main_tab_ui <- function(id) {
       column(3,
              uiOutput(ns('groupOrCountrySelectorUI'))),
       column(3,
-             uiOutput(ns('selectMetricUI')))
+             uiOutput(ns('selectMetricUI')),
+             span(textOutput(ns('explainMetric')),
+                  style="color:grey")
+             )
+    ),
+    fluidRow(column(6,
+                    uiOutput(ns('chooseIfNormUI'))
+                    ),
+             column(6,
+                    uiOutput((ns('chooseNormUI')))
+             )
+             
     ),
     fluidRow(column(6,
                     # show the plot with the single metric
@@ -24,8 +35,12 @@ main_tab_ui <- function(id) {
                     plotOutput(ns(
                       'doMapUI'
                     ))
-                    )
+             )
              
+    ),
+    fluidRow(
+      radioButtons(ns('whichTable'),'Show data', choices=c('Events', 'Demographic'), selected='Demographic'),
+      DTOutput(ns('dataView'))
     )
   )
 }
