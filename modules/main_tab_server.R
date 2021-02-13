@@ -105,7 +105,9 @@ main_tab_server <- function(id) {
                                      
                                    })
                  
-                 observeEvent(list(input$chooseNorm,
+                 observeEvent(list(rV$eventsDataMap,
+                                   rV$eventsDataPlot,
+                                   input$chooseNorm,
                                    input$multiplyFactor,
                                    input$chooseIfNorm),{
                                      validate(need(!is.null(input$selectMetric),''))
