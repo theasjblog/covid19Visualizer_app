@@ -4,18 +4,19 @@ main_tab_ui <- function(id) {
   ns <- NS(id)
   wellPanel(
     # button to refresh JHU data
-    refresh_data_ui(ns('refreshData')),
+    #refresh_data_ui(ns('refreshData')),
     fluidRow(
-      column(3,
-             uiOutput(ns('groupOrCountryUI'))
+      column(4,
+             uiOutput(ns('groupOrCountryUI')),
+             uiOutput(ns('groupOrCountrySelectorUI'))
       ),
-      column(3,
-             uiOutput(ns('groupOrCountrySelectorUI'))),
-      column(3,
-             uiOutput(ns('selectMetricUI')),
-             span(textOutput(ns('explainMetric')),
-                  style="color:grey")
-             )
+      column(4,
+             uiOutput(ns('selectMetricUI'))#,
+             # span(textOutput(ns('explainMetric')),
+             #      style="color:grey")
+             ),
+      column(4,
+             uiOutput(ns('metricMapUI')))
     ),
     fluidRow(column(6,
                     uiOutput(ns('chooseIfNormUI'))
@@ -39,7 +40,7 @@ main_tab_ui <- function(id) {
              
     ),
     fluidRow(
-      radioButtons(ns('whichTable'),'Show data', choices=c('Events', 'Demographic'), selected='Demographic'),
+      uiOutput(ns('whichTableUI')),
       DTOutput(ns('dataView'))
     )
   )

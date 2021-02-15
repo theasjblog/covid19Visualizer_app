@@ -20,7 +20,7 @@ main_tab_server <- function(id) {
                  
                  output$groupOrCountryUI <- renderUI({
                    radioButtons(ns('groupOrCountry'), 
-                                label = '',
+                                label = 'Geography',
                                 choices = c('Countries', 'Groups'), 
                                 selected = 'Countries')
                  })
@@ -61,7 +61,8 @@ main_tab_server <- function(id) {
                  
                  observeEvent(list(input$groupOrCountry,
                                    input$groupOrCountrySelector,
-                                   input$selectMetric),{
+                                   input$selectMetric,
+                                   input$metricMap),{
                                      
                                      # req does not work here for some reason
                                      validate(need(!is.null(input$groupOrCountry),''))
@@ -88,7 +89,9 @@ main_tab_server <- function(id) {
                                      
                                      population <- getPopulationDb(con, groups, countries)
                                      events <- getEventsDb(con, groups, countries, date, input$selectMetric)
-                                     eventsDataMap <- getMapData(con, events)
+                                     eventsDataMap <- events %>% 
+                                       filter(variable == input$metricMap)
+                                     eventsDataMap <- getMapData(con, eventsDataMap)
                                      populationDataMap <- population
                                      if(input$groupOrCountry=='Groups'){
                                        eventsDataPlot <- aggregateCountries(con, events, groups)
@@ -163,9 +166,7 @@ main_tab_server <- function(id) {
                    }
                    mapFacet <- TRUE
                    if(input$groupOrCountry=='Groups'){
-                     if(input$groupOrCountrySelector=='World'){
-                       mapFacet <- FALSE
-                     }
+                     mapFacet <- FALSE
                    }
                    p <- doMap(events, mapFacet)
                    
@@ -203,6 +204,16 @@ main_tab_server <- function(id) {
                    } else {
                      displayPopulation(rV$populationDataPlot, NULL)
                    }
+                 })
+                 
+                 output$metricMapUI <- renderUI({
+                   req(input$selectMetric)
+                   selectInput(ns('metricMap'), 'Metric for the map', choices = input$selectMetric, selected = input$selectMetric[1])
+                 })
+                 
+                 output$whichTableUI <- renderUI({
+                   req(rV$eventsDataPlot)
+                   radioButtons(ns('whichTable'),'Show data', choices=c('Events', 'Demographic'), selected='Demographic')
                  })
                  
                })
