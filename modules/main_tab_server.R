@@ -62,7 +62,8 @@ main_tab_server <- function(id) {
                  observeEvent(list(input$groupOrCountry,
                                    input$groupOrCountrySelector,
                                    input$selectMetric,
-                                   input$metricMap),{
+                                   #input$metricMap
+                                   ),{
                                      
                                      # req does not work here for some reason
                                      validate(need(!is.null(input$groupOrCountry),''))
@@ -89,10 +90,10 @@ main_tab_server <- function(id) {
                                      
                                      population <- getPopulationDb(con, groups, countries)
                                      events <- getEventsDb(con, groups, countries, date, input$selectMetric)
-                                     eventsDataMap <- events %>% 
-                                       filter(variable == input$metricMap)
-                                     eventsDataMap <- getMapData(con, eventsDataMap)
-                                     populationDataMap <- population
+                                     #eventsDataMap <- events %>% 
+                                      # filter(variable == input$metricMap)
+                                     #eventsDataMap <- getMapData(con, eventsDataMap)
+                                     #populationDataMap <- population
                                      if(input$groupOrCountry=='Groups'){
                                        eventsDataPlot <- aggregateCountries(con, events, groups)
                                        populationDataPlot <- aggregateCountries(con, population, groups)
@@ -101,14 +102,14 @@ main_tab_server <- function(id) {
                                        populationDataPlot <- population
                                      }
                                      
-                                     rV$eventsDataMap <- eventsDataMap
+                                     #rV$eventsDataMap <- eventsDataMap
                                      rV$eventsDataPlot <- eventsDataPlot
-                                     rV$populationDataMap <- populationDataMap
+                                     #rV$populationDataMap <- populationDataMap
                                      rV$populationDataPlot <- populationDataPlot
                                      
                                    })
                  
-                 observeEvent(list(rV$eventsDataMap,
+                 observeEvent(list(#rV$eventsDataMap,
                                    rV$eventsDataPlot,
                                    input$chooseNorm,
                                    input$multiplyFactor,
@@ -116,23 +117,23 @@ main_tab_server <- function(id) {
                                      validate(need(!is.null(input$selectMetric),''))
                                      if(input$chooseIfNorm){
 
-                                       validate(need(!is.null(input$multiplyFactor),''))
-                                       validate(need(!is.null(input$chooseNorm),''))
-                                       mf <- as.numeric(str_replace_all(input$multiplyFactor, ',',''))
-                                       nb <- input$chooseNorm
-                                       eventsDataMapNorm <- normaliseEvents(rV$eventsDataMap,
-                                                                            rV$populationDataMap,
-                                                                            nb,
-                                                                            mf)
+                                       #validate(need(!is.null(input$multiplyFactor),''))
+                                       #validate(need(!is.null(input$chooseNorm),''))
+                                       mf <- 100#as.numeric(str_replace_all(input$multiplyFactor, ',',''))
+                                       nb <- 'population'#input$chooseNorm
+                                       #eventsDataMapNorm <- normaliseEvents(rV$eventsDataMap,
+                                      #                                      rV$populationDataMap,
+                                       #                                     nb,
+                                      #                                      mf)
                                        eventsDataPlotNorm <- normaliseEvents(rV$eventsDataPlot,
                                                                             rV$populationDataPlot,
                                                                             nb,
                                                                             mf)
                                      } else {
-                                       eventsDataMapNorm <- NULL
+                                       #eventsDataMapNorm <- NULL
                                        eventsDataPlotNorm <- NULL
                                      }
-                                     rV$eventsDataMapNorm <- eventsDataMapNorm
+                                     #rV$eventsDataMapNorm <- eventsDataMapNorm
                                      rV$eventsDataPlotNorm <- eventsDataPlotNorm
                                      
                                    })
@@ -144,6 +145,7 @@ main_tab_server <- function(id) {
                    } else {
                      events <- rV$eventsDataPlot
                    }
+                   if(input$chooseRescale){}
                    p <- doPlot(events)
                    tryCatch({
                      ggplotly(p, tooltip = 'text')  %>%
@@ -194,6 +196,10 @@ main_tab_server <- function(id) {
                                                                              '1,000,000'), selected = 100)
                      )
                    )
+                 })
+                 
+                 output$chooseRescaleUI <- renderUI({
+                   checkboxInput(ns('chooseIfRescale'),'Rescale', value = FALSE)
                  })
                  
                  output$dataView <- renderDT({

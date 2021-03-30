@@ -14,11 +14,19 @@ for (i in list.files('./modules')) {
 
 # define ui of the main app
 ui <- navbarPage(
-  title = appName,
-  tabPanel('Main',
-           # tab with the line plots
-           main_tab_ui('main_tab'),),
-  tabPanel('Help',
-           # help tab
-           includeMarkdown('vignettes/help.md'))
+  title <- appName,
+
+  mainPanel(
+    tabsetPanel(tabPanel('Chart',
+                                 main_tab_ui('main_tab')),
+                        tabPanel('Map',
+                                 main_tab_ui('map_tab')),
+                        tabPanel('Help',
+                                 includeMarkdown('vignettes/help.md'))))
+  # tabPanel('Main',
+  #          # tab with the line plots
+  #          main_tab_ui('main_tab')),
+  # tabPanel('Help',
+  #          # help tab
+  #          includeMarkdown('vignettes/help.md'))
 )

@@ -15,28 +15,30 @@ main_tab_ui <- function(id) {
              # span(textOutput(ns('explainMetric')),
              #      style="color:grey")
              ),
-      column(4,
-             uiOutput(ns('metricMapUI')))
+      #column(4,
+      #       uiOutput(ns('metricMapUI')))
     ),
     fluidRow(column(6,
                     uiOutput(ns('chooseIfNormUI'))
                     ),
              column(6,
-                    uiOutput((ns('chooseNormUI')))
-             )
+                    uiOutput(ns('chooseIfRescaleUI')))
+             #column(6,
+            #        uiOutput((ns('chooseNormUI')))
+             #)
              
     ),
-    fluidRow(column(6,
+    fluidRow(column(12,
                     # show the plot with the single metric
                     plotlyOutput(ns(
                       'doPlotUI'
                     ))),
-             column(6,
-                    # show the plot with the single metric
-                    plotOutput(ns(
-                      'doMapUI'
-                    ))
-             )
+             #column(6,
+            #        # show the plot with the single metric
+            #        plotOutput(ns(
+            #          'doMapUI'
+            #        ))
+             #)
              
     ),
     fluidRow(
