@@ -16,14 +16,12 @@ for (i in list.files('./modules')) {
 ui <- navbarPage(
   title <- appName,
   
-  mainPanel(
-    tabsetPanel(tabPanel('Chart',
-                         main_tab_ui('main_tab')),
-                tabPanel('Map',
-                         map_tab_ui('map_tab')),
-                tabPanel('Data',
-                         data_tab_ui('data_tab')),
-                tabPanel('Help',
-                         includeMarkdown('vignettes/help.md'))
-                ))
+  tabPanel('Chart',
+           main_tab_ui('main_tab')),
+  tabPanel('Map',
+           map_tab_ui('map_tab')),
+  tabPanel('Data',
+           data_tab_ui('data_tab')),
+  tabPanel('Help',
+           includeMarkdown('vignettes/help.md'))
 )
