@@ -2,11 +2,12 @@
 data_tab_ui <- function(id) {
   #the session scope
   ns <- NS(id)
-  wellPanel(
+  fluidRow(
     selectors_ui(ns('selServData')),
-    fluidRow(
-      uiOutput(ns('whichTableUI')),
-      DTOutput(ns('dataView'))
-    )
-  )
+    wellPanel(
+      fluidRow(
+        uiOutput(ns('whichTableUI')),
+        DTOutput(ns('dataView'))
+      )
+    ))
 }

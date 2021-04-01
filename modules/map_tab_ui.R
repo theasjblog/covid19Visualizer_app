@@ -2,13 +2,15 @@
 map_tab_ui <- function(id) {
   #the session scope
   ns <- NS(id)
-  wellPanel(
+  fluidRow(
     selectors_ui(ns('selServMap')),
-    fluidRow(column(12,
-                    plotOutput(ns(
-                      'doMapUI'
-                    ))
-    )
+    wellPanel(
+      fluidRow(column(12,
+                      plotOutput(ns(
+                        'doMapUI'
+                      ))
+      )
+      )
     )
   )
 }

@@ -2,12 +2,14 @@
 main_tab_ui <- function(id) {
   #the session scope
   ns <- NS(id)
-  wellPanel(
+  fluidRow(
     selectors_ui(ns('selServPlot')),
-    fluidRow(column(12,
-                    plotlyOutput(ns(
-                      'doPlotUI'
-                    ))),
+    wellPanel(
+      fluidRow(column(12,
+                      plotlyOutput(ns(
+                        'doPlotUI'
+                      ))),
+      )
     )
   )
 }
