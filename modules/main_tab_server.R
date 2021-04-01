@@ -2,7 +2,7 @@
 main_tab_server <- function(input, output, session) {
     # session scope
     ns <- session$ns
-    
+    # the selector module
     dataSel <- callModule(selectors_server, "selServPlot", 
                           isMultiple = TRUE, 
                           showRescale = TRUE, 
@@ -16,8 +16,10 @@ main_tab_server <- function(input, output, session) {
                 "")
         )
         if (!is.null(dataSel()$eventsDataNorm)) {
+            # plot normalised data
             events <- dataSel()$eventsDataNorm
         } else {
+            # plot non-normalised data
             events <- dataSel()$eventsData
         }
         

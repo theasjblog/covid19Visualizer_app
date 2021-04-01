@@ -14,14 +14,18 @@ for (i in list.files('./modules')) {
 
 # define ui of the main app
 ui <- navbarPage(
+  # app title from config
   title <- appName,
-  
+  # module for the chart
   tabPanel('Chart',
            main_tab_ui('main_tab')),
+  # module for the map
   tabPanel('Map',
            map_tab_ui('map_tab')),
+  # module for the data tables
   tabPanel('Data',
            data_tab_ui('data_tab')),
+  # helper
   tabPanel('Help',
            includeMarkdown('vignettes/help.md'))
 )
