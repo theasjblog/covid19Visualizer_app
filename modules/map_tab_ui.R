@@ -8,7 +8,7 @@ map_tab_ui <- function(id) {
     wellPanel(
       # the map
       fluidRow(column(12,
-                      plotOutput(ns(
+                      plotlyOutput(ns(
                         'doMapUI'
                       ))
       )

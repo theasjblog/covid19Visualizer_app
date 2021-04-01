@@ -9,10 +9,11 @@ map_tab_server <- function(input, output, session) {
                           requester = "map"
                           )
     
-    output$doMapUI <- renderPlot({
+    output$doMapUI <- renderPlotly({
+        
         validate(
             need(
-                !is.null(dataSel()$dataMap) | !is.null(dataSel()$dataMapNorm), 
+                !is.null(dataSel()$dataMap) | !is.null(dataSel()$dataMapNorm),
                       ""
                 )
             )
@@ -23,19 +24,24 @@ map_tab_server <- function(input, output, session) {
             # we plot non-normalised data
             events <- dataSel()$dataMap
         }
-        # get the map data
-        events <- getMapData(con, events)
-        mapFacet <- TRUE
-        if (dataSel()$groupOrCountry == "Groups") {
-            # if we selected groups, we actually do not
-            # want to facet 
-            mapFacet <- FALSE
-        }
-        p <- doMap(events, mapFacet)
-        # check the map is correct by looking
-        # at the size of the data
-        validate(need(nrow(p$tm_shape$shp) > 0, ""))
+        #get the map data
+        events$code <- countrycode::countrycode(events$Country,
+                                                origin = 'country.name',
+                                                destination = 'iso3c')
+        # add tooltip text
+        events <- getText(events)
+        # select only the latest date
+        events <- events %>% 
+            dplyr::group_by(Country) %>%
+            dplyr::filter(date == max(date))
+        # do plot
+        p <- plotly::plot_ly(events,
+                             type='choropleth',
+                             locations=events$code,
+                             z=events$value,
+                             text=events$text,
+                             hoverinfo = 'text',
+                             colorscale="bluered")
         p
-        
     })
 }

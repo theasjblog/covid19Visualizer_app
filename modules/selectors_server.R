@@ -35,13 +35,21 @@ selectors_server <- function(input, output, session,
     # the data for the chart
     eventsData = NULL, 
     # the normalised data for the chart
-    eventsDataNorm = NULL)
+    eventsDataNorm = NULL,
+    # selected metrics
+    selectedMetrics = NULL)
   
   output$groupOrCountryUI <- renderUI({
+    # defaults
+    if(requester == 'map'){
+      selected <- 'Groups'
+    } else {
+      selected <- 'Countries'
+    }
     radioButtons(ns("groupOrCountry"), 
                  label = "Geography", 
                  choices = c("Countries", "Groups"), 
-                 selected = "Countries")
+                 selected = selected)
   })
   
   output$selectMetricUI <- renderUI({
@@ -54,12 +62,20 @@ selectors_server <- function(input, output, session,
       # just use metrics options
       choices <- rV$allMetrics
     }
+    choices <- stringr::str_replace_all(choices,
+                                        '_',
+                                        ' ')
     selectInput(ns("selectMetric"), label = "Metric", 
                 choices = choices, 
-                selected = "new_cases_smoothed", 
+                selected = "new cases smoothed", 
                 multiple = isMultiple)
   })
   
+  observeEvent(input$selectMetric,{
+    rV$selectedMetrics <- stringr::str_replace_all(input$selectMetric,
+                                                   ' ',
+                                                   '_')
+  })
   observeEvent(input$groupOrCountry, {
     # store which countries/groups were used
     # this will be the choices for the country/group
@@ -78,7 +94,11 @@ selectors_server <- function(input, output, session,
     if (input$groupOrCountry == "Countries") {
       mySel <- "Italy"
     } else {
-      mySel <- "Europe"
+      if (requester == 'map'){
+        mySel <- "World"
+      } else {
+        mySel <- "Europe"
+      }
     }
     selectInput(ns("groupOrCountrySelector"), label = "", 
                 choices = rV$optionsAre, 
@@ -88,12 +108,12 @@ selectors_server <- function(input, output, session,
   # observer to generate the data
   observeEvent(list(input$groupOrCountry, 
                     input$groupOrCountrySelector, 
-                    input$selectMetric), {
+                    rV$selectedMetrics), {
                       
                       # req does not work here for some reason
                       validate(need(!is.null(input$groupOrCountry), ""))
                       validate(need(!is.null(input$groupOrCountrySelector), ""))
-                      validate(need(!is.null(input$selectMetric), ""))
+                      validate(need(!is.null(rV$selectedMetrics), ""))
                       
                       if (input$groupOrCountry == "Countries") {
                         # function options if we selected to show countries
@@ -112,29 +132,31 @@ selectors_server <- function(input, output, session,
                         # validate thhe chosen groups
                         validate(need(all(groups %in% rV$allGroups), ""))
                       }
+                      # the date that will be used:
+                      # for maps NULL means latest date
+                      # for charts means all the dates
+                      date <- NULL
+                      
                       # get the population data
                       populationData <- getPopulationDb(con, groups, countries)
                       if (requester == "map") {
                         # the module was called by map
-                        if (input$selectMetric %in% rV$allMetrics) {
+                        if (rV$selectedMetrics %in% rV$allMetrics) {
                           # if the metric chosen is actually a metric,
                           # not a demographic value
-                          # the date that will be used by maps: NULL 
-                          # means we used the latest date
-                          date <- NULL
                           events <- getEventsDb(con, groups, countries, 
-                                                date, input$selectMetric)
+                                                date, rV$selectedMetrics)
                         } else {
                           # if we selected a demographic value for the map
                           events <- populationData %>% 
-                            dplyr::filter(variable %in% input$selectMetric)
+                            dplyr::filter(variable %in% rV$selectedMetrics)
                         }
                         # save output for map
                         rV$dataMap <- events
                       } else if (requester %in% c("plot", "data")) {
                         # the module was called by plot or data
                         events <- getEventsDb(con, groups, countries, date, 
-                                              input$selectMetric)
+                                              rV$selectedMetrics)
                         if (input$groupOrCountry == "Groups") {
                           # if we picked groups, we need to aggregate 
                           # by our group
@@ -157,7 +179,7 @@ selectors_server <- function(input, output, session,
   observeEvent(list(rV$eventsData,
                     rV$dataMap, 
                     input$chooseIfNorm), {
-                      validate(need(!is.null(input$selectMetric), ""))
+                      validate(need(!is.null(rV$selectedMetrics), ""))
                       if (input$chooseIfNorm) {
                         # we want to normalise
                         mf <- 100 # every 100 inhabitants
