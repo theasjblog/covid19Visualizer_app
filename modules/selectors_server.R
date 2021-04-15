@@ -22,7 +22,7 @@ selectors_server <- function(input, output, session,
       getOptions(con, "groups", "groups")), 
     # the metrics available in the database
     allMetrics = sort(getOptions(con, "events", "variable")), 
-    # the demographic options available in the databse
+    # the demographic options available in the database
     normaliseByOptions = sort(getOptions(con, "population", "variable")), 
     # the selected countries/groups
     optionsAre = NULL, 
