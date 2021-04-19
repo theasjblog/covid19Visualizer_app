@@ -23,6 +23,11 @@ main_tab_server <- function(input, output, session) {
             events <- dataSel()$eventsData
         }
         
+        if (input$doPredictions){
+            events <- predict_data(events, days_predict=60, 
+                                   training_window=28, 
+                                   confidence=NULL)
+        }
         p <- doPlot(events, dataSel()$chooseIfRescale)
         tryCatch({
             ggplotly(p, tooltip = "text") %>% 
@@ -33,4 +38,6 @@ main_tab_server <- function(input, output, session) {
         })
         
     })
+    
+    output$message <- renderText({'Predictions will use that latest 14 days and will project 60 days in the future. For better results used the "smoothed" version of data, when available. A simple ARIMA model is used.'})
 }
