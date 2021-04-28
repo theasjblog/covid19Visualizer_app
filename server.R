@@ -7,13 +7,14 @@ server <- function(input, output, session) {
   today <- Sys.Date()
   # if the data is older than yesterday, 
   # then update the database
-  if (today-1>date){
-    withProgress(message = 'Getting the latest data.',
-                 detail = 'This might take a few seconds...',{
-                   saveAllData()
-                 }
-    )
-  }
+  
+  #if (today-1>date){
+  #  withProgress(message = 'Getting the latest data.',
+  #               detail = 'This might take a few seconds...',{
+  #                 saveAllData()
+  #               }
+  #  )
+  #}
   
   # module for the chart
   callModule(main_tab_server, 'main_tab')
