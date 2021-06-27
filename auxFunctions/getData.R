@@ -55,7 +55,7 @@ getAllData <- function(){
                                       "numeric", "numeric", "numeric",
                                       "numeric", "numeric", "numeric",
                                       "numeric", "numeric", "numeric",
-                                      "numeric", "numeric", "numeric"))
+                                      "numeric", "numeric", "numeric", 'numeric'))
   # tidy up
   colnames(allData)[colnames(allData)=='location'] <- 'Country'
   allData$Country[allData$Country=="Cote d'Ivoire"] <- 'Ivory Coast'
@@ -198,7 +198,8 @@ getEvents <- function(allData){
            people_vaccinated,
            people_fully_vaccinated,
            new_vaccinations,
-           new_vaccinations_smoothed)
+           new_vaccinations_smoothed,
+           excess_mortality)
   
   # make the table long
   eventsData <- melt(eventsData, id=seq(1,2),
